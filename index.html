@@ -22,18 +22,116 @@
     </div>
 
     <!-- row2 -->
-    <div class="row pt-2 bg-info bg-opacity-25">
-        <div class="col-12 ps-5">
+    <div class="row pt-2 bg-info bg-opacity-25 rounded-1 mx-3">
+        <div class="col-12 mt-2 ps-5">
             <p>
                 This simple app allows you to add tasks with categories and due dates. You can also filter and sort tasks.
             </p>
-
         </div>
     </div>
 
 
+    <!-- row 3 -->
+    <div class="row pt-2">
+        <div class="col-3 mt-2 mx-3 ">
+            <button class="btn btn-primary">Add Task</button>
+        </div>
+    </div>
 
-</div>
+    <!-- row 4 -->
+    <div class="row pt-2 d-none">
+        <div class="col-12 mx-4">
+            <form id="taskForm">
+                <!-- Task Name -->
+                <div class="mb-3">
+                    <label for="taskName" class="form-label">Task Name</label>
+                    <input type="text" class="form-control" id="taskName" required>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" required>
+                        <option value="" disabled selected>Select Category</option>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Priority -->
+                <div class="mb-3">
+                    <label class="form-label">Priority</label><br>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="priority" id="priorityLow" value="Low" required>
+                        <label class="form-check-label" for="priorityLow">Low</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="priority" id="priorityMedium" value="Medium">
+                        <label class="form-check-label" for="priorityMedium">Medium</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="priority" id="priorityHigh" value="High">
+                        <label class="form-check-label" for="priorityHigh">High</label>
+                    </div>
+                </div>
+
+                <!-- Due Date and Time -->
+                <div class="mb-3">
+                    <label for="dueDateTime" class="form-label">Due Date and Time</label>
+                    <input type="text" class="form-control" id="dueDateTime" required>
+                    <i class="bi bi-calendar" id="calendarIcon"></i>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="description" rows="3"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary">Add Task</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- row 5 -->
+    <!-- Filter Section (Initially visible) -->
+    <div class="main-page-section">
+        <!-- row 5: Filter by Category -->
+        <div class="row pt-2">
+            <div class="col-12 mt-2 mx-3">
+                <p>Filter by category</p>
+                <select class="form-select" id="categoryFilter">
+                    <option value="All">All Categories</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- row 6: Sort by Due Date -->
+        <div class="row pt-2">
+            <div class="col-12 mt-2 mx-3">
+                <p>Sort by Due Time</p>
+                <button id="sortAsc" class="btn btn-secondary">Ascending</button>
+                <button id="sortDesc" class="btn btn-secondary">Descending</button>
+            </div>
+        </div>
+
+        <!-- row 7: Task List (List Group) -->
+        <div class="row pt-2">
+            <div class="col-12 mt-2 mx-3">
+                <ul class="list-group" id="taskListContainer">
+                    <!-- Task items will be dynamically added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
 
 
 

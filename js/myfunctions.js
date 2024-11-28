@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // ----------------------- const ---------------------------------------
 const form = document.getElementById("form-row");
-
+// ---------------------------------------------------------------------
 
 const InitDomModule = (function(){
 
@@ -83,7 +83,25 @@ const UiModule = (function() {
             mainPage.classList.remove("d-none");
             form.classList.add("d-none");
         }
+    };
 
+
+    /**
+     *
+     * @param
+     */
+    const toggleErrors = () => {
+        const validationResults= validationTaskModule.getFieldsValid();
+        Object.entries(validationResults).forEach(([field, isValid]) => {
+
+            let fieldElement = document.getElementById(field);
+            if (!isValid) {
+                fieldElement.classList.add("is-invalid");
+            }
+            else{
+                fieldElement.classList.remove("is-invalid");
+            }
+        });
     };
 
     /**
@@ -106,14 +124,12 @@ const UiModule = (function() {
     /**
      *
      */
-    const renderFormErrors = () => {
 
-    };
 
     return {
         toggleFormVisibility,
         renderTaskList,
-        renderFormErrors
+        toggleErrors
     }
 })();
 
@@ -178,17 +194,23 @@ const createAndEditTaskModule = ( function () {
      * First, it extracts the form's data, then it calls on a function that checks if the fields are valid.
      * If the inputs are valid it adds the task to the list and resets the form, else it'll show the errors.
      */
-    const submitTask = function () {
+    const submitTask = function (event) {
+
+        // Prevent the default form submission behavior
+        event.preventDefault();
+
         const formData = formModule.getFormData();
 
-        if (validationTaskModule.isValid()) {
+        if (validationTaskModule.isValid(formData)) {
             taskDataModule.addTask(formData);
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
+            //UiModule.toggleErrors(); // this function is relevant only if i had errors and changed them
             UiModule.renderTaskList();
         }
         else {
-            UiModule.renderFormErrors();
+            UiModule.toggleErrors();
+            //UiModule.toggleFormVisibility(true);
         }
     };
 
@@ -214,6 +236,8 @@ const createAndEditTaskModule = ( function () {
      */
     const cancelTask = function (taskIndex) {
         formModule.clearForm();
+        validationTaskModule.resetFieldsValid();
+        UiModule.toggleErrors();
         UiModule.toggleFormVisibility(false);
     }
 
@@ -231,10 +255,10 @@ const formModule = (function () {
      *
      */
     const getFormData = () => {
-        return {name: document.getElementById("taskName").value,
+        return {taskName: document.getElementById("taskName").value,
                 category: document.getElementById("category").value,
-                priority: document.getElementById("priority").value,
-                date: document.getElementById("datetimepicker1").value,
+                priority: document.querySelector('input[name="priority"]:checked')?.value || '',
+                dueDateTime: document.getElementById("datetimepicker1").value,
                 description: document.getElementById("description").value};
     };
 
@@ -255,6 +279,34 @@ const formModule = (function () {
 
 const validationTaskModule = ( function () {
 
+    // list for keeping up with the valid and not valid inputs in the form
+    let fieldsValid = {
+        taskName: true,
+        category: true,
+        priority: true,
+        dueDateTime: true,
+        description: true
+    };
+
+    /**
+     *
+     */
+    const resetFieldsValid = function () {
+        Object.keys(fieldsValid).forEach(key => {
+            fieldsValid[key] = true;
+        });
+    }
+
+    /**
+     *
+     * @param
+     */
+
+    const getFieldsValid = function () {
+        return fieldsValid;
+    }
+
+
     /**
      *
      * @param element
@@ -262,11 +314,15 @@ const validationTaskModule = ( function () {
     const validTaskName = function ( element ) {
         const nameRegex = /^[A-Za-z0-9\s]+$/;
 
-        // checking if the name is unique
-        let listOfLists =taskDataModule.getTasks();
-        const exists = listOfLists.some(subList => subList.includes(element));
+        // Ensure the name is not empty and follows the regex
+        if (!element || element.trim() === "" || !nameRegex.test(element)) {
+            return false;
+        }
 
-        return !exists && nameRegex.test(element);
+        // checking if the name is unique
+        const listOfLists =taskDataModule.getTasks();
+        const exists = listOfLists.some(subList => subList.includes(element));
+        return !exists;
     }
 
     /**
@@ -274,7 +330,8 @@ const validationTaskModule = ( function () {
      * @param element
      */
     const validCategory = function ( element ) {
-        return (element === 'Select Category');
+        // Ensure category is selected and not "Select Category"
+        return element && element !== 'Select Category';
     }
 
     /**
@@ -282,7 +339,8 @@ const validationTaskModule = ( function () {
      * @param element
      */
     const validPriority = function ( element ) {
-        return element;  // element is empty if priority not checked
+        // Ensure priority is selected (should not be empty)
+        return !!element;
     }
 
     /**
@@ -290,7 +348,7 @@ const validationTaskModule = ( function () {
      * @param element
      */
     const validDueDateTime = function ( element ) {
-
+        return true;
     }
 
     /**
@@ -299,11 +357,14 @@ const validationTaskModule = ( function () {
      */
     const validDescription = function ( element ) {
         const descriptionRegex = /^[A-Za-z0-9 .,!?'"-]*$/;
+
+        // Allow the description to be empty, but if it's not, it must follow the regex
+        return element === "" || descriptionRegex.test(element);
     }
 
     // Map form field to their validator functions
     const fieldValidators = {
-        name: validTaskName,
+        taskName: validTaskName,
         category: validCategory,
         priority: validPriority,
         dueDateTime: validDueDateTime,
@@ -318,15 +379,21 @@ const validationTaskModule = ( function () {
      * @param taskData
      */
     const isValid = (taskData) => {
+
+        let valid = true;
+
+        // Go through each field and validate
         for (const [field, value] of Object.entries(taskData)) {
             const validator = fieldValidators[field];
             if (validator && !validator(value)) {
-                return false; // Return false on first validation failure
+                valid = false;
+                fieldsValid[field] = false;
+            } else {
+                fieldsValid[field] = true; // Reset field to valid if no issues
             }
         }
-        return true; // All fields valid
+        return valid;
     };
-
 
 
     return {
@@ -335,7 +402,9 @@ const validationTaskModule = ( function () {
         validCategory,
         validPriority,
         validDueDateTime,
-        validDescription
+        validDescription,
+        getFieldsValid,
+        resetFieldsValid
     }
 })();
 

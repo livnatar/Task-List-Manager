@@ -3,7 +3,60 @@
 document.addEventListener('DOMContentLoaded', function(){
 
     document.getElementById("add-task-main").addEventListener('click', createAndEditTaskModule.create);
+    InitDom.initCategoryOptions();
+    InitDom.InitPriorityOptions();
+
 });
+
+const InitDom = (function(){
+
+    /**
+     *
+     */
+    const InitPriorityOptions = () => {
+        const priorityContainer = document.getElementById("priority");
+        const priorities = ["Low","Medium","High"];
+        priorityContainer.innerHTML = "" ; //  ? clear existing options ?
+        let radioPriorityHTML =``;
+
+        priorities.forEach(priority => {
+
+            radioPriorityHTML += `
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="priority" id="priority${priority}" value="${priority}">
+                <label class="form-check-label" for="priority${priority}">${priority}</label>
+            </div> `;
+        });
+
+        priorityContainer.insertAdjacentHTML("beforeend", radioPriorityHTML);
+    };
+
+    /**
+     *
+     */
+    const initCategoryOptions = () => {
+        const filterCategoryContainer = document.getElementById("categoryFilter");
+        const formCategoryContainer = document.getElementById("category");
+
+        const categories = ["Work", "Personal", "Shopping", "Health", "Other"];
+
+        [filterCategoryContainer, formCategoryContainer].forEach((dropdown) => {
+            categories.forEach((category) => {
+                const option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                dropdown.appendChild(option);
+            });
+        });
+    };
+
+
+    return{
+        InitPriorityOptions,
+        initCategoryOptions
+    };
+
+})();
 
 const UiModule = (function() {
 
@@ -34,36 +87,6 @@ const UiModule = (function() {
 
     };
 
-
-    /**
-     *
-     */
-    const renderPriorityOptions = () => {
-        const priorityContainer = document.getElementById("priority");
-        const priorities = ["Low","Medium","High"];
-        priorityContainer.innerHTML = "" ; //  ? clear existing options ?
-
-        priorities.forEach(priority => {
-            const radioPriorityHTML = '' ;
-
-        });
-
-        priorityContainer.insertAdjacentHTML("beforeend", radioPriorityHTML);
-    };
-
-    /**
-     *
-     */
-    const renderCategoryOptions = () => {
-
-    };
-
-    /**
-     *
-     */
-    const renderFilterCategoryOptions = () => {
-
-    };
 
     /**
      *
@@ -168,13 +191,6 @@ const createAndEditTaskModule = ( function () {
 
 
 const formModule = (function () {
-
-    /**
-     * ?? use - renderPriorityOptions, renderCategoryOptions
-     */
-    const activateForm = () => {
-
-    };
 
     /**
      *

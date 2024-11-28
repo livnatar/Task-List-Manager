@@ -45,33 +45,13 @@
                     <label for="category" class="form-label">Category</label>
                     <select class="form-select w-75" id="category" required>
                         <option value="" disabled selected>Select Category</option>
-                        <!--
-                        <option value="Work">Work</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Other">Other</option>
-                        -->
                     </select>
                 </div>
 
                 <!-- Priority -->
                 <div class="mb-3">
                     <label class="form-label">Priority</label><br>
-
-                   <div class="form-check form-check-inline" id="priority" >
-                        <!--- input class="form-check-input" type="radio" name="priority" id="priorityLow" value="Low" required>
-                        <label class="form-check-label" for="priorityLow">Low</label> -->
-                    </div>
-                    <!--
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="priority" id="priorityMedium" value="Medium" checked>
-                        <label class="form-check-label" for="priorityMedium">Medium</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="priority" id="priorityHigh" value="High">
-                        <label class="form-check-label" for="priorityHigh">High</label>
-                    </div>
-                            -->
+                    <div class="form-check form-check-inline" id="priority" ></div>
                 </div>
 
                 <!-- Due Date and Time -->
@@ -106,9 +86,9 @@
         <div class="row pt-2">
             <div class="col-12 mt-2 mx-3">
                 <p>Filter by category</p>
-                <!--
-                <select class="form-select w-75" id="categoryFilter" > </select>
-                -->
+                <select class="form-select w-75" id="categoryFilter" >
+                    <option value="All">All</option>
+                </select>
 
             </div>
         </div>

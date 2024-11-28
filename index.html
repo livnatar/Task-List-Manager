@@ -36,21 +36,30 @@
                 <!-- Task Name -->
                 <div class="mb-3">
                     <label for="taskName" class="form-label">Task Name</label>
-                    <input type="text" class="form-control w-75" id="taskName" required>
+                    <input type="text" class="form-control w-75" id="taskName"> <!-- is-ivalid we will add when submitting and validator is false-->
+                    <div id="validationTaskNameFeedback" class="invalid-feedback">
+                        Task name must contain only letters, numbers, and spaces
+                    </div>
                 </div>
 
                 <!-- Category -->
                 <div class="mb-3">
                     <label for="category" class="form-label">Category</label>
-                    <select class="form-select w-75" id="category" required>
+                    <select class="form-select w-75" id="category">
                         <option value="" disabled selected>Select Category</option>
                     </select>
+                    <div id="validationCategoryFeedback" class="invalid-feedback">
+                        Must select category
+                    </div>
                 </div>
 
                 <!-- Priority -->
                 <div class="mb-3">
                     <label class="form-label">Priority</label><br>
                     <div class="form-check form-check-inline" id="priority" ></div>
+                    <div id="validationPriorityFeedback" class="invalid-feedback">
+                        Must select priority
+                    </div>
                 </div>
 
                 <!-- Due Date and Time -->
@@ -65,12 +74,18 @@
                             <i class="bi bi-calendar"></i>
                         </span>
                     </div>
+                    <div id="validationDueDateFeedback" class="invalid-feedback">
+                        Must select a date and time
+                    </div>
                 </div>
 
                 <!-- Description -->
                 <div class="mb-3">
                     <label for="description" class="form-label">Description (Optional)</label>
                     <textarea class="form-control w-75" id="description" rows="3"></textarea>
+                    <div id="validationDescriptionFeedback" class="invalid-feedback">
+                        Description can only contain letters, numbers, spaces and usual punctuation
+                    </div>
                 </div>
 
                 <!-- Submit Button -->

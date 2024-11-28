@@ -39,7 +39,16 @@ const UiModule = (function() {
      *
      */
     const renderPriorityOptions = () => {
+        const priorityContainer = document.getElementById("priority");
+        const priorities = ["Low","Medium","High"];
+        priorityContainer.innerHTML = "" ; //  ? clear existing options ?
 
+        priorities.forEach(priority => {
+            const radioPriorityHTML = '' ;
+
+        });
+
+        priorityContainer.insertAdjacentHTML("beforeend", radioPriorityHTML);
     };
 
     /**

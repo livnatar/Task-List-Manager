@@ -168,7 +168,7 @@ const taskDataModule = (function (){
      * @returns *[]
      */
     const getTasks = () => {
-        return taskList;    // return a copy to avoid direct change
+        return [...taskList];    // return a copy to avoid direct change
     };
 
     return {
@@ -205,7 +205,8 @@ const createAndEditTaskModule = ( function () {
             taskDataModule.addTask(formData);
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
-            //UiModule.toggleErrors(); // this function is relevant only if i had errors and changed them
+            validationTaskModule.resetFieldsValid(true);
+            UiModule.toggleErrors(); // this function is relevant only if i had errors and changed them
             UiModule.renderTaskList();
         }
         else {
@@ -321,7 +322,12 @@ const validationTaskModule = ( function () {
 
         // checking if the name is unique
         const listOfLists =taskDataModule.getTasks();
-        const exists = listOfLists.some(subList => subList.includes(element));
+
+        // Check if any task already has the same name
+        const exists = listOfLists.some(task => {
+            console.log(task);  // Log each task object to see its structure
+            return task.taskName === element;  // Compare taskName of each task with the element
+        });
         return !exists;
     }
 

@@ -98,6 +98,15 @@ const taskDataModule = (function (){
         taskList.splice(index, 1);
     };
 
+    /**
+     *
+     * @param index
+     * @returns {*}
+     */
+    const getTask = (index) => {
+        return taskList[index];
+    };
+
     const getTasks = () => {
         return taskList;    // return a copy to avoid direct change
     };
@@ -119,13 +128,14 @@ const createAndEditTaskModule = ( function () {
     const createTask = function (event) {
 
         UiModule.toggleFormVisibility(true);
-        /*
-        const mainPage= document.getElementsByClassName("main-page-section")[0];
-        mainPage.classList.add("d-none");
-
-        const form = document.getElementById("form-row");
-        form.classList.remove("d-none");*/
     }
+
+    /**
+     *
+     */
+    const submitTask = function () {
+
+    };
 
     /**
      *
@@ -160,7 +170,7 @@ const createAndEditTaskModule = ( function () {
 const formModule = (function () {
 
     /**
-     * use - renderPriorityOptions, renderCategoryOptions
+     * ?? use - renderPriorityOptions, renderCategoryOptions
      */
     const activateForm = () => {
 

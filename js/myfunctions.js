@@ -7,8 +7,72 @@ document.addEventListener('DOMContentLoaded', function(){
 
 const UiModule = (function() {
 
-    return {
+    /**
+     *
+     * @param showForm = bool to control form visibility
+     */
+    const toggleFormVisibility = (showForm) => {
+        const mainPage= document.getElementsByClassName("main-page-section")[0];
+        const form = document.getElementById("form-row");
 
+        if(showForm) {
+            mainPage.classList.add("d-none");
+            form.classList.remove("d-none");
+        }
+        else{
+            mainPage.classList.remove("d-none");
+            form.classList.add("d-none");
+        }
+
+    };
+
+    /**
+     * ascending is default? or we need to move event
+     * @param isAscending
+     */
+    const toggleSortOptions = (isAscending) => {
+
+    };
+
+
+    /**
+     *
+     */
+    const renderPriorityOptions = () => {
+
+    };
+
+    /**
+     *
+     */
+    const renderCategoryOptions = () => {
+
+    };
+
+    /**
+     *
+     */
+    const renderFilterCategoryOptions = () => {
+
+    };
+
+    /**
+     *
+     * @param tasks
+     */
+    const renderTaskList = (tasks) => {
+
+    };
+
+    /**
+     *
+     */
+    const renderFormError = () => {
+
+    };
+
+    return {
+        toggleFormVisibility
     }
 })();
 
@@ -21,11 +85,11 @@ const taskDataModule = (function (){
         taskList.push(task);
     };
 
-    const deleteTask = (index) =>{
+    const deleteTask = (index) => {
         taskList.splice(index, 1);
     };
 
-    const getTasks = () =>{
+    const getTasks = () => {
         return taskList;    // return a copy to avoid direct change
     };
 
@@ -40,15 +104,42 @@ const taskDataModule = (function (){
 const createAndEditTaskModule = ( function () {
 
     /**
-     *
+     * use activate form
      * @param event
      */
     const createTask = function (event) {
+
+        UiModule.toggleFormVisibility(true);
+        /*
         const mainPage= document.getElementsByClassName("main-page-section")[0];
         mainPage.classList.add("d-none");
 
         const form = document.getElementById("form-row");
-        form.classList.remove("d-none");
+        form.classList.remove("d-none");*/
+    }
+
+    /**
+     *
+     * @param taskIndex
+     */
+    const editTask = function (taskIndex) {
+
+    }
+
+    /**
+     *
+     * @param taskIndex
+     */
+    const deleteTask = function (taskIndex) {
+
+    }
+
+    /**
+     *
+     * @param taskIndex
+     */
+    const cancelTask = function (taskIndex) {
+
     }
 
     return {
@@ -59,8 +150,35 @@ const createAndEditTaskModule = ( function () {
 
 const formModule = (function () {
 
+    /**
+     * use - renderPriorityOptions, renderCategoryOptions
+     */
+    const activateForm = () => {
+
+    };
+
+    /**
+     *
+     */
+    const getFormData = () => {
+
+    };
+
+    /**
+     * go over all the form and check if valid
+     * @param taskData
+     */
+    const isValid = (taskData) => {
+
+    };
 
 
+    /**
+     *
+     */
+    const clearForm = () => {
+
+    };
 
     return {
 

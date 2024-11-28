@@ -13,6 +13,22 @@ const InitDom = (function(){
     /**
      *
      */
+
+    const InitdatePickers = () => {
+        const datePickers = document.querySelectorAll('[data-coreui-toggle="date-picker"]');
+        datePickers.forEach(picker => {
+            new coreui.DatePicker(picker, {
+                locale: picker.getAttribute('data-coreui-locale') || 'en-US',
+                timepicker: picker.getAttribute('data-coreui-timepicker') === 'true',
+                date: picker.getAttribute('data-coreui-date') || null
+            });
+        });
+    };
+
+
+    /**
+     *
+     */
     const InitPriorityOptions = () => {
         const priorityContainer = document.getElementById("priority");
         const priorities = ["Low","Medium","High"];
@@ -52,6 +68,7 @@ const InitDom = (function(){
 
 
     return{
+        InitdatePickers,
         InitPriorityOptions,
         initCategoryOptions
     };

@@ -56,10 +56,28 @@
                 <!-- Due Date and Time -->
                 <div class="mb-3">
                     <label for="dueDateTime" class="form-label">Due Date and Time</label>
-                    <input type="text" class="form-control w-75" id="dueDateTime" required>
-                    <i class="bi bi-calendar" id="calendarIcon"></i>
-                </div>
+<!--                    <input type="text" class="form-control w-75" id="dueDateTime" required>-->
+<!--                    <i class="bi bi-calendar" id="calendarIcon"></i>-->
 
+                    <div class="well">
+                        <div id="datetimepicker1" class="input-append date">
+                            <input data-format="dd/MM/yyyy hh:mm:ss" type="text"></input>
+                            <span class="add-on">
+                                <i data-time-icon="icon-time" data-date-icon="icon-calendar">
+                                </i>
+                            </span>
+                        </div>
+                    </div>
+                    <script type="text/javascript">
+                        $(function() {
+                            $('#datetimepicker1').datetimepicker({
+                                language: 'pt-BR'
+                            });
+                        });
+                    </script>
+
+
+                </div>
                 <!-- Description -->
                 <div class="mb-3">
                     <label for="description" class="form-label">Description (Optional)</label>

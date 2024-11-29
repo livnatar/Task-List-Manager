@@ -259,7 +259,7 @@ const formModule = (function () {
         return {taskName: document.getElementById("taskName").value,
                 category: document.getElementById("category").value,
                 priority: document.querySelector('input[name="priority"]:checked')?.value || '',
-                dueDateTime: document.getElementById("datetimepicker1").value,
+                dueDateTime: document.getElementById("dueDateTime").value,
                 description: document.getElementById("description").value};
     };
 

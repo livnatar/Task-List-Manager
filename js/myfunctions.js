@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // ----------------------- const ---------------------------------------
 const form = document.getElementById("form-row");
+const taskNameFeedback = "Task name must contain only letters, numbers, and spaces"
+const uniqueTaskNameFeedback = "Task name must be unique"
+
 // ---------------------------------------------------------------------
 
 const InitDomModule = (function(){
@@ -88,7 +91,7 @@ const UiModule = (function() {
 
     /**
      *
-     * @param
+     *
      */
     const toggleErrors = () => {
         const validationResults= validationTaskModule.getFieldsValid();
@@ -115,9 +118,34 @@ const UiModule = (function() {
 
     /**
      *
-     * @param tasks
+     * @param task
+     * @param taskIndex
      */
-    const renderTaskList = (tasks) => {
+    const renderTask = (task, taskIndex) => {
+        const taskListContainer = document.getElementById("taskListContainer");
+
+        // If the task list was empty, clear the "empty" message
+        const emptyMessage = taskListContainer.querySelector(".empty-message");
+        if (emptyMessage) {
+            emptyMessage.remove();
+        }
+
+        // Generate the HTML for the new task
+        const taskHTML = `
+        <li class="list-group-item w-75">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""} ${task.dueDateTime}
+                </div>
+                <div>
+                    <button class="btn btn-warning btn-sm me-2" onclick="createAndEditTaskModule.edit(${taskIndex})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="createAndEditTaskModule.delete(${taskIndex})">Delete</button>
+                </div>
+            </div>
+        </li> `;
+
+        // Append the new task to the container
+        taskListContainer.insertAdjacentHTML("beforeend", taskHTML);
 
     };
 
@@ -128,7 +156,7 @@ const UiModule = (function() {
 
     return {
         toggleFormVisibility,
-        renderTaskList,
+        renderTask,
         toggleErrors
     }
 })();
@@ -144,6 +172,12 @@ const taskDataModule = (function (){
      */
     const addTask = (task) => {
         taskList.push(task);
+
+    // Get the correct index of the new task (last element in the array)
+    const taskIndex = taskList.length - 1;
+
+    // Render the new task
+    UiModule.renderTask(task, taskIndex);
     };
 
     /**
@@ -174,7 +208,8 @@ const taskDataModule = (function (){
     return {
         addTask,
         deleteTask,
-        getTasks
+        getTasks,
+        getTask
     }
 })();
 
@@ -206,8 +241,7 @@ const createAndEditTaskModule = ( function () {
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
             validationTaskModule.resetFieldsValid(true);
-            UiModule.toggleErrors(); // this function is relevant only if i had errors and changed them
-            UiModule.renderTaskList();
+            UiModule.toggleErrors(); // this function is relevant only if I had errors and changed them
         }
         else {
             UiModule.toggleErrors();
@@ -245,7 +279,9 @@ const createAndEditTaskModule = ( function () {
     return {
         create: createTask,
         submit: submitTask,
-        cancel: cancelTask
+        cancel: cancelTask,
+        edit: editTask,
+        delete: deleteTask
     }
 })();
 
@@ -300,7 +336,7 @@ const validationTaskModule = ( function () {
 
     /**
      *
-     * @param
+     *
      */
 
     const getFieldsValid = function () {
@@ -311,7 +347,7 @@ const validationTaskModule = ( function () {
     /**
      *
      * @param element
-     */
+
     const validTaskName = function ( element ) {
         const nameRegex = /^[A-Za-z0-9\s]+$/;
 
@@ -329,7 +365,34 @@ const validationTaskModule = ( function () {
             return task.taskName === element;  // Compare taskName of each task with the element
         });
         return !exists;
+    }*/
+    /**
+     *
+     * @param element
+     */
+    const validTaskName = function ( element ) {
+        const nameRegex = /^[A-Za-z0-9\s]+$/;
+        const feedback = document.getElementById("validationTaskNameFeedback");
+
+        // Ensure the name is not empty and follows the regex
+        if (!element || element.trim() === "" || !nameRegex.test(element)) {
+            feedback.textContent = taskNameFeedback; // Default feedback for invalid format
+            return false;
+        }
+
+        // checking if the name is unique
+        const listOfLists =taskDataModule.getTasks();
+        const exists = listOfLists.some(task => task.taskName === element);
+
+        if (exists) {
+            feedback.textContent = uniqueTaskNameFeedback; // Feedback for duplicate names
+            return false;
+        }
+
+        return true;
     }
+
+
 
     /**
      *
@@ -354,7 +417,8 @@ const validationTaskModule = ( function () {
      * @param element
      */
     const validDueDateTime = function ( element ) {
-        return true;
+        // Ensure Due Date and Time is selected (should not be empty)
+        return !!element;
     }
 
     /**

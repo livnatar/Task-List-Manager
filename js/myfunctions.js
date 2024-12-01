@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
 
+    // Set interval to update all tasks' remaining time every 60 seconds
+    setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds (1 minute)
 });
 
 // ----------------------- const ---------------------------------------
@@ -130,12 +132,15 @@ const UiModule = (function() {
             emptyMessage.remove();
         }
 
+
+
         // Generate the HTML for the new task
         const taskHTML = `
-        <li class="list-group-item w-75">
-            <div class="d-flex justify-content-between align-items-center">
+        <li class="list-group-item w-75"> 
+            <div class="d-flex justify-content-between align-items-center " >
                 <div>
-                    <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""} ${task.dueDateTime}
+                    <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""}
+                    <span id="remaining-time-${taskIndex}">${calculateTimeRemaining(task.dueDateTime)}</span>
                 </div>
                 <div>
                     <button class="btn btn-warning btn-sm me-2" onclick="createAndEditTaskModule.edit(${taskIndex})">Edit</button>
@@ -149,15 +154,59 @@ const UiModule = (function() {
 
     };
 
-    /**
-     *
-     */
+    const removeTask = (taskIndex) => {
+
+
+    };
+
+    const editTask = (task, taskIndex) => {
+
+    };
+
+   // Function to update the remaining time for all tasks in the DOM
+    function updateRemainingTimes() {
+        const remainingTimeElements = document.querySelectorAll('[id^="remaining-time-"]');
+
+        remainingTimeElements.forEach(element => {
+            const taskIndex = element.id.split('-')[2]; // Extract taskIndex from the ID
+            const task = taskDataModule.getTask(taskIndex); // Assuming tasks are stored globally or accessible here
+
+            element.textContent = calculateTimeRemaining(task.dueDateTime);
+        });
+    }
+
+    function calculateTimeRemaining(dueDateTime) {
+        const now = new Date();
+        const dueDate = new Date(dueDateTime);
+        const timeDiff = dueDate - now + 5 * 1000; // Add a 30-second grace buffer
+
+        // If the due date is in the past
+        if (timeDiff < 1) {
+            return "Overdue";
+        }
+
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.round((timeDiff % (1000 * 60 * 60)) / (1000 * 60)); // Use rounding
+
+        let timeRemaining = "";
+
+        if (days > 0) timeRemaining += `${days}d `;
+        if (hours > 0) timeRemaining += `${hours}h `;
+        if (minutes > 0 || timeRemaining === "") timeRemaining += `${minutes}m`;
+
+        return timeRemaining.trim();
+    }
 
 
     return {
         toggleFormVisibility,
         renderTask,
-        toggleErrors
+        toggleErrors,
+        removeTask,
+        editTask,
+        updateRemainingTimes,
+        calculateTimeRemaining
     }
 })();
 
@@ -186,6 +235,7 @@ const taskDataModule = (function (){
      */
     const deleteTask = (index) => {
         taskList.splice(index, 1);
+        UiModule.removeTask(index);
     };
 
     /**
@@ -255,6 +305,7 @@ const createAndEditTaskModule = ( function () {
      */
     const editTask = function (taskIndex) {
 
+        // uiModuel.editTask(task,taskIndex);
     }
 
     /**

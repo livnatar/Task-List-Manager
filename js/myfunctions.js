@@ -373,13 +373,23 @@ const createAndEditTaskModule = ( function () {
      * @param taskIndex
      */
     const deleteTask = function (taskIndex) {
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
-        taskDataModule.deleteTask(taskIndex); //delete the task from the list
+        // Show the modal
+        deleteModal.show();
 
-        //delete the task from the DOM
-        UiModule.removeTask(taskIndex);
+        // Attach a one-time click listener to the confirm delete button
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        confirmDeleteBtn.onclick = function () {
+            // Proceed with deletion
+            taskDataModule.deleteTask(taskIndex);   //delete the task from the list
+            UiModule.removeTask(taskIndex);         //delete the task from the DOM
 
-    }
+            // Hide the modal
+            deleteModal.hide();
+        };
+    };
+
 
     /**
      *

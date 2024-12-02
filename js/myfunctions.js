@@ -120,10 +120,9 @@ const UiModule = (function() {
 
     /**
      *
-     * @param task
-     * @param taskIndex
+     *
      */
-    const renderTask = (task, taskIndex) => {
+    const renderTaskList = () => {
         const taskListContainer = document.getElementById("taskListContainer");
 
         // If the task list was empty, clear the "empty" message
@@ -132,9 +131,41 @@ const UiModule = (function() {
             emptyMessage.remove();
         }
 
+        const taskList = taskDataModule.getTasks();
 
+        // Clear the existing task list before adding the new tasks
+        taskListContainer.innerHTML = '';  // This removes all existing tasks
 
-        // Generate the HTML for the new task
+        // Check if there are no tasks
+        if (taskList.length === 0) {
+            const noTasksMessage = document.createElement("li");
+            noTasksMessage.classList.add("list-group-item text-center text-muted w-75 empty-message");
+            noTasksMessage.textContent = "Your task list is empty!";
+            taskListContainer.appendChild(noTasksMessage);
+        }
+        else {
+            // Generate the HTML for each task and append it to the container
+            taskList.forEach((task, taskIndex) => {
+                const taskHTML = `
+                <li class="list-group-item w-75"> 
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""}
+                            <span id="remaining-time-${taskIndex}">${calculateTimeRemaining(task.dueDateTime)}</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-warning btn-sm me-2" onclick="createAndEditTaskModule.edit(${taskIndex})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="createAndEditTaskModule.delete(${taskIndex})">Delete</button>
+                        </div>
+                    </div>
+                </li>`;
+
+                // Add the task HTML to the container
+                taskListContainer.innerHTML += taskHTML;
+            });
+        }
+
+       /** // Generate the HTML for the new task
         const taskHTML = `
         <li class="list-group-item w-75"> 
             <div class="d-flex justify-content-between align-items-center " >
@@ -150,7 +181,7 @@ const UiModule = (function() {
         </li> `;
 
         // Append the new task to the container
-        taskListContainer.insertAdjacentHTML("beforeend", taskHTML);
+        //taskListContainer.insertAdjacentHTML("beforeend", taskHTML);**/
 
     };
 
@@ -201,7 +232,7 @@ const UiModule = (function() {
 
     return {
         toggleFormVisibility,
-        renderTask,
+        renderTaskList,
         toggleErrors,
         removeTask,
         editTask,
@@ -226,7 +257,7 @@ const taskDataModule = (function (){
         const taskIndex = taskList.length - 1;
 
         // Render the new task
-        UiModule.renderTask(task, taskIndex);
+       // UiModule.renderTask(task, taskIndex);
     };
 
     /**
@@ -290,6 +321,7 @@ const createAndEditTaskModule = ( function () {
             taskDataModule.addTask(formData);
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
+            UiModule.renderTaskList();
             validationTaskModule.resetFieldsValid(true);
             UiModule.toggleErrors(); // this function is relevant only if I had errors and changed them
         }

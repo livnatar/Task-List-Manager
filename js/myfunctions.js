@@ -222,11 +222,11 @@ const taskDataModule = (function (){
     const addTask = (task) => {
         taskList.push(task);
 
-    // Get the correct index of the new task (last element in the array)
-    const taskIndex = taskList.length - 1;
+        // Get the correct index of the new task (last element in the array)
+        const taskIndex = taskList.length - 1;
 
-    // Render the new task
-    UiModule.renderTask(task, taskIndex);
+        // Render the new task
+        UiModule.renderTask(task, taskIndex);
     };
 
     /**
@@ -394,29 +394,6 @@ const validationTaskModule = ( function () {
         return fieldsValid;
     }
 
-
-    /**
-     *
-     * @param element
-
-    const validTaskName = function ( element ) {
-        const nameRegex = /^[A-Za-z0-9\s]+$/;
-
-        // Ensure the name is not empty and follows the regex
-        if (!element || element.trim() === "" || !nameRegex.test(element)) {
-            return false;
-        }
-
-        // checking if the name is unique
-        const listOfLists =taskDataModule.getTasks();
-
-        // Check if any task already has the same name
-        const exists = listOfLists.some(task => {
-            console.log(task);  // Log each task object to see its structure
-            return task.taskName === element;  // Compare taskName of each task with the element
-        });
-        return !exists;
-    }*/
     /**
      *
      * @param element

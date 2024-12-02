@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
 
     // Set interval to update all tasks' remaining time every 60 seconds
-    setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds (1 minute)
+    setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
 });
 
 // ----------------------- const ---------------------------------------

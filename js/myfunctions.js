@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById("add-task-main").addEventListener('click', createAndEditTaskModule.create);
     InitDomModule.initCategoryOptions();
     InitDomModule.InitPriorityOptions();
+    UiModule.renderTaskList();   // for showing empty list message
     document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
 
@@ -125,91 +126,109 @@ const UiModule = (function() {
     const renderTaskList = () => {
         const taskListContainer = document.getElementById("taskListContainer");
 
-        // If the task list was empty, clear the "empty" message
-        const emptyMessage = taskListContainer.querySelector(".empty-message");
-        if (emptyMessage) {
-            emptyMessage.remove();
-        }
+        // Clear the existing task list before adding the new tasks
+        taskListContainer.innerHTML = '';  // This removes all existing tasks
 
         const taskList = taskDataModule.getTasks();
 
-        // Clear the existing task list before adding the new tasks
-        taskListContainer.innerHTML = '';  // This removes all existing tasks
 
         // Check if there are no tasks
         if (taskList.length === 0) {
             const noTasksMessage = document.createElement("li");
-            noTasksMessage.classList.add("list-group-item text-center text-muted w-75 empty-message");
+            noTasksMessage.classList.add("list-group-item", "text-center", "text-muted" ,"empty-message");
             noTasksMessage.textContent = "Your task list is empty!";
             taskListContainer.appendChild(noTasksMessage);
         }
         else {
             // Generate the HTML for each task and append it to the container
             taskList.forEach((task, taskIndex) => {
-                const taskHTML = `
-                <li class="list-group-item w-75"> 
+                const taskElement = document.createElement("li");
+                taskElement.classList.add("list-group-item", "task-item");
+
+                // Build the task's HTML structure
+                taskElement.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""}
-                            <span id="remaining-time-${taskIndex}">${calculateTimeRemaining(task.dueDateTime)}</span>
+                            <span class="remaining-time">${calculateTimeRemaining(task.dueDateTime)}</span>
                         </div>
                         <div>
-                            <button class="btn btn-warning btn-sm me-2" onclick="createAndEditTaskModule.edit(${taskIndex})">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="createAndEditTaskModule.delete(${taskIndex})">Delete</button>
+                            <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
+                            <button class="btn btn-danger btn-sm delete-btn">Delete</button>
                         </div>
                     </div>
-                </li>`;
+                `;
 
-                // Add the task HTML to the container
-                taskListContainer.innerHTML += taskHTML;
+                // Append the task element
+                taskListContainer.appendChild(taskElement);
+
+                // Add listeners (non-inline) for edit and delete buttons
+                taskElement.querySelector('.edit-btn').addEventListener('click', () => createAndEditTaskModule.edit(taskIndex));
+                taskElement.querySelector('.delete-btn').addEventListener('click', () => createAndEditTaskModule.delete(taskIndex));
+
+                updateTaskColor(taskElement, task.dueDateTime);
             });
         }
 
-       /** // Generate the HTML for the new task
-        const taskHTML = `
-        <li class="list-group-item w-75"> 
-            <div class="d-flex justify-content-between align-items-center " >
-                <div>
-                    <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""}
-                    <span id="remaining-time-${taskIndex}">${calculateTimeRemaining(task.dueDateTime)}</span>
-                </div>
-                <div>
-                    <button class="btn btn-warning btn-sm me-2" onclick="createAndEditTaskModule.edit(${taskIndex})">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="createAndEditTaskModule.delete(${taskIndex})">Delete</button>
-                </div>
-            </div>
-        </li> `;
-
-        // Append the new task to the container
-        //taskListContainer.insertAdjacentHTML("beforeend", taskHTML);**/
-
     };
 
+    /**
+     *
+     * @param taskIndex
+     */
     const removeTask = (taskIndex) => {
+        const taskListContainer = document.getElementById("taskListContainer");
 
+        // Get all task items in the list
+        const taskItems = taskListContainer.querySelectorAll('.task-item');
 
+        // Check if the task at the given index exists
+        if (taskItems[taskIndex]) {
+            // Remove the specific task item
+            taskListContainer.removeChild(taskItems[taskIndex]);
+
+            // after removing task check if the list is empty
+            if (taskDataModule.getTasks().length === 0) renderTaskList() ;
+        }
     };
+
 
     const editTask = (task, taskIndex) => {
 
     };
 
-   // Function to update the remaining time for all tasks in the DOM
+    function updateTaskColor(taskElement, dueDateTime) {
+        const dueDate = new Date(dueDateTime);
+        const now = new Date();
+
+        if (dueDate < now)
+        {
+            taskElement.classList.add("list-group-item-danger"); // Mark task as overdue
+        }
+    }
+
+    // Function to update the remaining time for all tasks in the DOM
     function updateRemainingTimes() {
-        const remainingTimeElements = document.querySelectorAll('[id^="remaining-time-"]');
+        const remainingTimeElements = document.querySelectorAll('.remaining-time');
 
         remainingTimeElements.forEach(element => {
-            const taskIndex = element.id.split('-')[2]; // Extract taskIndex from the ID
-            const task = taskDataModule.getTask(taskIndex); // Assuming tasks are stored globally or accessible here
+            // Find the parent task element to get the task index
+            const taskElement = element.closest('.task-item'); // Ensure a unique identifier exists per task
+            const taskIndex = Array.from(taskElement.parentNode.children).indexOf(taskElement); // Index of task in DOM
+            const task = taskDataModule.getTask(taskIndex); // Retrieve task data
 
+            // Update the text content with the calculated remaining time
             element.textContent = calculateTimeRemaining(task.dueDateTime);
+
+            // Update the task's color based on whether it's overdue
+            updateTaskColor(taskElement, task.dueDateTime);
         });
     }
 
     function calculateTimeRemaining(dueDateTime) {
         const now = new Date();
         const dueDate = new Date(dueDateTime);
-        const timeDiff = dueDate - now + 5 * 1000; // Add a 30-second grace buffer
+        const timeDiff = dueDate - now ;
 
         // If the due date is in the past
         if (timeDiff < 1) {
@@ -218,7 +237,7 @@ const UiModule = (function() {
 
         const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.round((timeDiff % (1000 * 60 * 60)) / (1000 * 60)); // Use rounding
+        const minutes = Math.ceil((timeDiff % (1000 * 60 * 60)) / (1000 * 60)); // Use rounding
 
         let timeRemaining = "";
 
@@ -251,13 +270,23 @@ const taskDataModule = (function (){
      * @param task
      */
     const addTask = (task) => {
-        taskList.push(task);
+        // Convert the task's due date to a Date object for accurate comparison
+        const taskDueDate = new Date(task.dueDateTime);
 
-        // Get the correct index of the new task (last element in the array)
-        const taskIndex = taskList.length - 1;
+        // Find the correct index where the task should be inserted
+        let insertIndex = taskList.findIndex(existingTask => {
+            return new Date(existingTask.dueDateTime) > taskDueDate;
+        });
 
-        // Render the new task
-       // UiModule.renderTask(task, taskIndex);
+        // If no such index is found, the task should be added to the end
+        if (insertIndex === -1) {
+            taskList.push(task);
+        }
+        else {
+            // Insert the task at the found index
+            taskList.splice(insertIndex, 0, task);
+        }
+
     };
 
     /**
@@ -266,7 +295,6 @@ const taskDataModule = (function (){
      */
     const deleteTask = (index) => {
         taskList.splice(index, 1);
-        UiModule.removeTask(index);
     };
 
     /**
@@ -322,12 +350,12 @@ const createAndEditTaskModule = ( function () {
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
             UiModule.renderTaskList();
+            UiModule.updateRemainingTimes(); // Immediately update the remaining time
             validationTaskModule.resetFieldsValid(true);
             UiModule.toggleErrors(); // this function is relevant only if I had errors and changed them
         }
         else {
             UiModule.toggleErrors();
-            //UiModule.toggleFormVisibility(true);
         }
     };
 
@@ -345,6 +373,11 @@ const createAndEditTaskModule = ( function () {
      * @param taskIndex
      */
     const deleteTask = function (taskIndex) {
+
+        taskDataModule.deleteTask(taskIndex); //delete the task from the list
+
+        //delete the task from the DOM
+        UiModule.removeTask(taskIndex);
 
     }
 

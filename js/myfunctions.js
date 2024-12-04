@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
     document.getElementById('sortByDueTime').addEventListener('click', FilterSortModule.sortTasks);
-
-
+    document.getElementById('categoryFilter').addEventListener('click', FilterSortModule.filterList);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -617,9 +616,41 @@ const FilterSortModule = ( function () {
 
     };
 
-    return {
-        sortTasks
 
+    /**
+     * This function is responsible for filtering the tasks by their category
+     * @param element
+     */
+    const filterList = function ( element ) {
+
+        const filterBy = element.target.value(); //getting the selected value
+        const taskListContainer = document.getElementById("taskListContainer");
+        const taskItems = taskListContainer.querySelectorAll('.task-item');
+
+
+        if (filterBy !== 'All') {
+
+            // A forEach loop that goes over that tasks and checks if the category equals to filterBy.
+            // If so, the task will appear, else d-none will be added
+            taskItems.forEach((task) => {
+                if (filterBy !== task.dataset.category) {
+                    task.classList.add("d-none");
+                }
+                else{
+                    task.classList.remove("d-none");
+                }
+            });
+        }
+        else {
+            taskItems.forEach((task) => {
+                    task.classList.remove("d-none");
+            });
+        }
+    }
+
+    return {
+        sortTasks,
+        filterList
     }
 })();
 

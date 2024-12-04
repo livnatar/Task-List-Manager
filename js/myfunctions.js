@@ -199,7 +199,15 @@ const UiModule = (function() {
     };
 
 
-    const editTask = (task, taskIndex) => {
+    const editTask = (task) => {
+        const { taskName, category, priority, dueDateTime, description } = task;
+
+        // Populate form fields with task data
+        document.getElementById("taskName").value = taskName;
+        document.getElementById("category").value = category;
+        document.querySelector(`input[name="priority"][value="${priority}"]`).checked = true;
+        document.getElementById("dueDateTime").value = dueDateTime;
+        document.getElementById("description").value = description;
 
     };
 
@@ -395,7 +403,10 @@ const manageTaskList = ( function () {
      */
     const editTask = function (taskIndex) {
 
-        // uiModuel.editTask(task,taskIndex);
+        const taskToEdit = taskDataModule.getTask(taskIndex);
+
+        UiModule.toggleFormVisibility(true);
+        UiModule.editTask(taskToEdit);
     }
 
     /**

@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function(){
     UiModule.renderTaskList();   // for showing empty list message
     document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
+    document.getElementById('sortByDueTime').addEventListener('click', FilterSortModule.sortTasks);
+
+
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -111,11 +114,16 @@ const UiModule = (function() {
     };
 
     /**
-     * ascending is default? or we need to move event
-     * @param isAscending
+     *
+     * Toggle the button text between Ascending and Descending
      */
-    const toggleSortOptions = (isAscending) => {
+    const toggleSortOptions = () => {
 
+        const sortButton = document.getElementById("sortByDueTime");
+
+        // Toggle text based on current content
+        const isAscending = sortButton.textContent.includes("Ascending");
+        sortButton.textContent = isAscending ? "Sort by Due Time: Descending" : "Sort by Due Time: Ascending";
     };
 
 
@@ -207,7 +215,11 @@ const UiModule = (function() {
         }
     }
 
-    // Function to update the remaining time for all tasks in the DOM
+
+
+    /**
+     * // Function to update the remaining time for all tasks in the DOM
+     */
     function updateRemainingTimes() {
         const remainingTimeElements = document.querySelectorAll('.remaining-time');
 
@@ -256,7 +268,8 @@ const UiModule = (function() {
         removeTask,
         editTask,
         updateRemainingTimes,
-        calculateTimeRemaining
+        calculateTimeRemaining,
+        toggleSortOptions
     }
 })();
 
@@ -264,29 +277,32 @@ const UiModule = (function() {
 const taskDataModule = (function (){
 
     let taskList = [];      // inside the module without access to the outside
+    let isAscending = true;
 
     /**
-     * This function adds the task into the task list
+     * This function adds the task into the task list based on the sorting order (ascending or descending)
      * @param task
      */
     const addTask = (task) => {
+
         // Convert the task's due date to a Date object for accurate comparison
         const taskDueDate = new Date(task.dueDateTime);
 
-        // Find the correct index where the task should be inserted
+        // Find the correct index where the task should be inserted based on the sorting order
         let insertIndex = taskList.findIndex(existingTask => {
-            return new Date(existingTask.dueDateTime) > taskDueDate;
+            const existingTaskDueDate = new Date(existingTask.dueDateTime);
+
+            // Compare the due dates based on the sort order
+            return isAscending ? existingTaskDueDate > taskDueDate: existingTaskDueDate < taskDueDate;
         });
 
         // If no such index is found, the task should be added to the end
         if (insertIndex === -1) {
             taskList.push(task);
-        }
-        else {
+        } else {
             // Insert the task at the found index
             taskList.splice(insertIndex, 0, task);
         }
-
     };
 
     /**
@@ -314,11 +330,18 @@ const taskDataModule = (function (){
         return [...taskList];    // return a copy to avoid direct change
     };
 
+    const reverseTaskList = () =>{
+        taskList.reverse();
+        isAscending = !isAscending;
+    };
+
+
     return {
         addTask,
         deleteTask,
         getTasks,
-        getTask
+        getTask,
+        reverseTaskList,
     }
 })();
 
@@ -583,9 +606,19 @@ const validationTaskModule = ( function () {
 
 
 const FilterSortModule = ( function () {
+    const sortTasks = (e) => {
 
+        taskDataModule.reverseTaskList();
+
+        UiModule.toggleSortOptions();
+
+        // Call the Ui module to render the updated task list
+        UiModule.renderTaskList();
+
+    };
 
     return {
+        sortTasks
 
     }
 })();

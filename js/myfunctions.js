@@ -2,14 +2,14 @@
 
 document.addEventListener('DOMContentLoaded', function(){
 
-    document.getElementById("add-task-main").addEventListener('click', createAndEditTaskModule.create);
-    InitDomModule.initCategoryOptions();
-    InitDomModule.InitPriorityOptions();
+    document.getElementById("add-task-main").addEventListener('click', manageTaskList.create);
+    initDomModule.initCategoryOptions();
+    initDomModule.initPriorityOptions();
     UiModule.renderTaskList();   // for showing empty list message
-    document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
-    document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
-    document.getElementById('sortByDueTime').addEventListener('click', FilterSortModule.sortTasks);
-    document.getElementById('categoryFilter').addEventListener('change', FilterSortModule.filterList);
+    document.querySelector('button[type="submit"]').addEventListener('click', manageTaskList.submit);
+    document.getElementById('cancelBtn').addEventListener('click', manageTaskList.cancel);
+    document.getElementById('sortByDueTime').addEventListener('click', filterSortModule.sortTasks);
+    document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -22,12 +22,12 @@ const uniqueTaskNameFeedback = "Task name must be unique"
 
 // ---------------------------------------------------------------------
 
-const InitDomModule = (function(){
+const initDomModule = (function(){
 
     /**
      *
      */
-    const InitPriorityOptions = () => {
+    const initPriorityOptions = () => {
         const priorityContainer = document.getElementById("priority");
         const priorities = ["Low","Medium","High"];
         priorityContainer.innerHTML = "" ; //  ? clear existing options ?
@@ -66,7 +66,7 @@ const InitDomModule = (function(){
 
 
     return{
-        InitPriorityOptions,
+        initPriorityOptions,
         initCategoryOptions
     };
 
@@ -74,6 +74,8 @@ const InitDomModule = (function(){
 
 
 const UiModule = (function() {
+
+    let taskListContainer = document.getElementById("taskListContainer");
 
     /**
      *
@@ -131,7 +133,6 @@ const UiModule = (function() {
      *
      */
     const renderTaskList = () => {
-        const taskListContainer = document.getElementById("taskListContainer");
 
         // Clear the existing task list before adding the new tasks
         taskListContainer.innerHTML = '';  // This removes all existing tasks
@@ -141,10 +142,7 @@ const UiModule = (function() {
 
         // Check if there are no tasks
         if (taskList.length === 0) {
-            const noTasksMessage = document.createElement("li");
-            noTasksMessage.classList.add("list-group-item", "text-center", "text-muted" ,"empty-message");
-            noTasksMessage.textContent = "Your task list is empty!";
-            taskListContainer.appendChild(noTasksMessage);
+            renderEmptyList();
         }
         else {
             // Generate the HTML for each task and append it to the container
@@ -171,8 +169,8 @@ const UiModule = (function() {
                 taskListContainer.appendChild(taskElement);
 
                 // Add listeners (non-inline) for edit and delete buttons
-                taskElement.querySelector('.edit-btn').addEventListener('click', () => createAndEditTaskModule.edit(taskIndex));
-                taskElement.querySelector('.delete-btn').addEventListener('click', () => createAndEditTaskModule.delete(taskIndex));
+                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(taskIndex));
+                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(taskIndex));
 
                 updateTaskColor(taskElement, task.dueDateTime);
             });
@@ -260,6 +258,13 @@ const UiModule = (function() {
         return timeRemaining.trim();
     }
 
+    function renderEmptyList(){
+        const noTasksMessage = document.createElement("li");
+        noTasksMessage.classList.add("list-group-item", "text-center", "text-muted" ,"empty-message");
+        noTasksMessage.textContent = "Your task list is empty!";
+        taskListContainer.appendChild(noTasksMessage);
+    }
+
 
     return {
         toggleFormVisibility,
@@ -269,7 +274,8 @@ const UiModule = (function() {
         editTask,
         updateRemainingTimes,
         calculateTimeRemaining,
-        toggleSortOptions
+        toggleSortOptions,
+        renderEmptyList
     }
 })();
 
@@ -346,7 +352,7 @@ const taskDataModule = (function (){
 })();
 
 
-const createAndEditTaskModule = ( function () {
+const manageTaskList = ( function () {
 
     /**
      * use activate form
@@ -373,6 +379,7 @@ const createAndEditTaskModule = ( function () {
             formModule.clearForm();
             UiModule.toggleFormVisibility(false);
             UiModule.renderTaskList();
+            filterSortModule.filterList( { target: { value: filterSortModule.getCategory() } });
             UiModule.updateRemainingTimes(); // Immediately update the remaining time
             validationTaskModule.resetFieldsValid(true);
             UiModule.toggleErrors(); // this function is relevant only if I had errors and changed them
@@ -421,7 +428,7 @@ const createAndEditTaskModule = ( function () {
     const cancelTask = function (taskIndex) {
         formModule.clearForm();
         validationTaskModule.resetFieldsValid();
-        UiModule.toggleErrors();
+        UiModule.toggleErrors();  //Remove error highlights
         UiModule.toggleFormVisibility(false);
     }
 
@@ -455,6 +462,7 @@ const formModule = (function () {
         document.getElementById('taskForm').reset();
 
     };
+
 
     return {
         clearForm,
@@ -605,7 +613,14 @@ const validationTaskModule = ( function () {
 })();
 
 
-const FilterSortModule = ( function () {
+const filterSortModule = ( function () {
+
+    let currentFilter = 'All'; // Variable to store the current filter state
+
+    /**
+     *
+     * @param e
+     */
     const sortTasks = (e) => {
 
         taskDataModule.reverseTaskList();
@@ -614,6 +629,8 @@ const FilterSortModule = ( function () {
 
         // Call the Ui module to render the updated task list
         UiModule.renderTaskList();
+
+        filterList( { target: { value: currentFilter } });
 
     };
 
@@ -628,6 +645,7 @@ const FilterSortModule = ( function () {
         const taskListContainer = document.getElementById("taskListContainer");
         const taskItems = taskListContainer.querySelectorAll('.task-item');
 
+        currentFilter = filterBy; // Store the selected filter value
 
         if (filterBy !== 'All') {
 
@@ -647,11 +665,19 @@ const FilterSortModule = ( function () {
                     task.classList.remove("d-none");
             });
         }
+
+        const hiddenTasks = taskListContainer.querySelectorAll('.d-none').length;
+        hiddenTasks === taskDataModule.getTasks().length ? UiModule.renderEmptyList() : null;
+    }
+
+    const getCategory = function () {
+        return currentFilter;
     }
 
     return {
         sortTasks,
-        filterList
+        filterList,
+        getCategory
     }
 })();
 

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelector('button[type="submit"]').addEventListener('click', createAndEditTaskModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', createAndEditTaskModule.cancel);
     document.getElementById('sortByDueTime').addEventListener('click', FilterSortModule.sortTasks);
-    document.getElementById('categoryFilter').addEventListener('click', FilterSortModule.filterList);
+    document.getElementById('categoryFilter').addEventListener('change', FilterSortModule.filterList);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -151,6 +151,7 @@ const UiModule = (function() {
             taskList.forEach((task, taskIndex) => {
                 const taskElement = document.createElement("li");
                 taskElement.classList.add("list-group-item", "task-item");
+                taskElement.dataset.category = task.category;  // Add category to the data attribute
 
                 // Build the task's HTML structure
                 taskElement.innerHTML = `
@@ -623,7 +624,7 @@ const FilterSortModule = ( function () {
      */
     const filterList = function ( element ) {
 
-        const filterBy = element.target.value(); //getting the selected value
+        const filterBy = element.target.value; //getting the selected value
         const taskListContainer = document.getElementById("taskListContainer");
         const taskItems = taskListContainer.querySelectorAll('.task-item');
 

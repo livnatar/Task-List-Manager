@@ -180,10 +180,11 @@ const UiModule = (function() {
         }
         else {
             // Generate the HTML for each task and append it to the container
-            taskList.forEach((task, taskIndex) => {
+            taskList.forEach((task) => {
                 const taskElement = document.createElement("li");
                 taskElement.classList.add("list-group-item", "task-item");
                 taskElement.dataset.category = task.category;  // Add category to the data attribute
+                taskElement.dataset.taskName = task.taskName;  // Assign task name as data attribute
 
                 // Build the task's HTML structure
                 taskElement.innerHTML = `
@@ -203,8 +204,8 @@ const UiModule = (function() {
                 taskListContainer.appendChild(taskElement);
 
                 // Add listeners (non-inline) for edit and delete buttons
-                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(taskIndex));
-                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(taskIndex));
+                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(task.taskName));
+                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(task.taskName));
 
                 updateTaskColor(taskElement, task.dueDateTime);
             });
@@ -244,42 +245,21 @@ const UiModule = (function() {
     //     }
     //
     // };
-    const removeTask = function(taskIndex) {
-        const taskListContainer = document.getElementById("taskListContainer");
+    const removeTask = function(taskName) {
 
         // Get all task items in the list
-        const taskItems = taskListContainer.querySelectorAll('.task-item');
+        const taskItems = document.querySelectorAll('.task-item');
 
-        // Check if the task at the given index exists
-        if (taskItems[taskIndex]) {
-            // Remove the specific task item
-            taskListContainer.removeChild(taskItems[taskIndex]);
+        taskItems.forEach((taskItem) => {
+            // Check if the task item's data-task-name matches the task name
+            if (taskItem.dataset.taskName === taskName) {
+                taskItem.remove();  // Remove the task item from the DOM
+            }
+        });
 
-            // Update listeners with correct indices
-            const updatedTaskItems = taskListContainer.querySelectorAll('.task-item');
-            // updatedTaskItems.forEach((taskElement, newIndex) => {
-            //     const editButton = taskElement.querySelector('.edit-btn');
-            //     const deleteButton = taskElement.querySelector('.delete-btn');
-            //
-            //     // Update listener with the new index
-            //     editButton.onclick = () => manageTaskList.edit(newIndex);
-            //     deleteButton.onclick = () => manageTaskList.delete(newIndex);
-            // });
-            updatedTaskItems.forEach((taskElement, newIndex) => {
-                const editButton = taskElement.querySelector('.edit-btn');
-                const deleteButton = taskElement.querySelector('.delete-btn');
+        // Check if the filtered tasks need to be updated
+        filterSortModule.filterList({ target: { value: filterSortModule.getCategory() } });
 
-                editButton.replaceWith(editButton.cloneNode(true));
-                deleteButton.replaceWith(deleteButton.cloneNode(true));
-
-                // Assign fresh listeners to the cloned buttons
-                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(newIndex));
-                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(newIndex));
-            });
-
-            // Check if the filtered tasks need to be updated
-            filterSortModule.filterList({ target: { value: filterSortModule.getCategory() } });
-        }
     };
 
     /**
@@ -331,8 +311,8 @@ const UiModule = (function() {
         remainingTimeElements.forEach(element => {
             // Find the parent task element to get the task index
             const taskElement = element.closest('.task-item'); // Ensure a unique identifier exists per task
-            const taskIndex = Array.from(taskElement.parentNode.children).indexOf(taskElement); // Index of task in DOM
-            const task = taskDataModule.getTask(taskIndex); // Retrieve task data
+            const taskName = taskElement.dataset.taskName; // Use taskName stored as data attribute
+            const task = taskDataModule.getTaskByName(taskName); // Retrieve task data
 
             // Update the text content with the calculated remaining time
             element.textContent = calculateTimeRemaining(task.dueDateTime);
@@ -380,8 +360,9 @@ const UiModule = (function() {
      * @returns {void}
      */
     const renderEmptyList = function() {
+
         const taskListContainer = document.getElementById("taskListContainer");
-        const existingEmptyMessage = taskListContainer.querySelector(".empty-message");
+        const existingEmptyMessage = document.querySelector(".empty-message");
         // If no empty-message exists, add the new one
         if (!existingEmptyMessage) {
             const noTasksMessage = document.createElement("li");
@@ -393,8 +374,7 @@ const UiModule = (function() {
 
     const removeEmptyList = function() {
 
-        let taskListContainer = document.getElementById("taskListContainer");
-        const existingEmptyMessage = taskListContainer.querySelector(".empty-message");
+        const existingEmptyMessage = document.querySelector(".empty-message");
         if (existingEmptyMessage) {
             existingEmptyMessage.remove();
         }
@@ -420,7 +400,7 @@ const UiModule = (function() {
  * and reversing the order of tasks. It ensures that the tasks are sorted according to their due date
  * and provides methods for interacting with the task list.
  *
- * @type {{addTask, deleteTask, getTasks: (function(): *[]), getTask: (function(*): *), reverseTaskList}}
+ *
  */
 const taskDataModule = (function (){
 
@@ -456,20 +436,22 @@ const taskDataModule = (function (){
     };
 
     /**
-     * This function receives a task index and deletes that task from the list
-     * @param index
+     *
+     * @param taskName
      */
-    const deleteTask = function(index){
-        taskList.splice(index, 1);
+    const deleteTask = function (taskName) {
+        const index = taskList.findIndex(task => task.taskName === taskName);
+        if (index !== -1) {
+            taskList.splice(index, 1); // Remove task by name
+        }
     };
 
     /**
-     * This function receives a task index and sends it back
-     * @param index
-     * @returns taskList[index]
+     *
+     * @param taskName
      */
-    const getTask = function(index){
-        return taskList[index];
+    const getTaskByName = function (taskName) {
+        return taskList.find(task => task.taskName === taskName);
     };
 
     /**
@@ -478,7 +460,7 @@ const taskDataModule = (function (){
      * @returns {Array} A copy of the task list.
      */
     const getTasks = function(){
-        return [...taskList];    // return a copy to avoid direct change
+        return taskList;
     };
 
     /**
@@ -495,7 +477,7 @@ const taskDataModule = (function (){
         addTask,
         deleteTask,
         getTasks,
-        getTask,
+        getTaskByName,
         reverseTaskList,
     }
 })();
@@ -508,15 +490,13 @@ const taskDataModule = (function (){
  */
 const manageTaskList = ( function () {
 
-    let currentTaskIndex = null; // Keep track of the task to delete
 
     /**
      * Activates the task creation form.
      *
-     * @param event - The event object triggered when the form is activated.
      * @returns {void}
      */
-    const createTask = function (event) {
+    const createTask = function () {
         UiModule.toggleFormVisibility(true);
     };
 
@@ -550,10 +530,10 @@ const manageTaskList = ( function () {
     /**
      *
      */
-    const editTask = function (taskIndex) {
+    const editTask = function (taskName) {
 
-        const taskToEdit = taskDataModule.getTask(taskIndex);
-        taskDataModule.deleteTask(taskIndex);
+        const taskToEdit = taskDataModule.getTaskByName(taskName);
+        taskDataModule.deleteTask(taskName);    // to prevent a task from appearing more than once
         UiModule.toggleFormVisibility(true);
         UiModule.editTask(taskToEdit);
     };
@@ -561,34 +541,19 @@ const manageTaskList = ( function () {
     /**
      * Shows the deletion modal and sets the current task index.
      *
-     * @param {number} taskIndex - Index of the task to be deleted.
+     *
      */
-    const deleteTask = function (taskIndex) {
+    const deleteTask = function (taskName) {
 
         if (confirm(" Are you sure you want to delete this task?"))
         {
-            taskDataModule.deleteTask(taskIndex); // Remove from data
-            UiModule.removeTask(taskIndex);
+            taskDataModule.deleteTask(taskName); // Remove from data
+            UiModule.removeTask(taskName);
         }
-        // currentTaskIndex = taskIndex; // Store the task index
-        // const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        // deleteModal.show(); // Show the modal
+
     };
 
-    // /**
-    //  * Logic executed when confirming task deletion.
-    //  */
-    // const attachDeleteListener = function () {
-    //     if (currentTaskIndex !== null) {
-    //         taskDataModule.deleteTask(currentTaskIndex); // Remove from data
-    //         UiModule.removeTask(currentTaskIndex);       // Remove from DOM
-    //         currentTaskIndex = null;                    // Reset index
-    //
-    //         // Hide the modal
-    //         const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    //         deleteModal.hide();
-    //     }
-    // };
+
 
 
     /**
@@ -827,11 +792,9 @@ const filterSortModule = ( function () {
      * This function reverses the task list order, toggles the sort button text,
      * and re-renders the updated task list. It also reapplies the current filter to the list.
      *
-     * @param e - The event object triggered by the sort action (e.g., button click).
-     *
      * @returns {void}
      */
-    const sortTasks = function(e){
+    const sortTasks = function(){
 
         taskDataModule.reverseTaskList();
 
@@ -862,25 +825,6 @@ const filterSortModule = ( function () {
         const taskItems = taskListContainer.querySelectorAll('.task-item');
 
         currentFilter = filterBy; // Store the selected filter value
-
-        // if (filterBy !== 'All') {
-        //
-        //     // A forEach loop that goes over that tasks and checks if the category equals to filterBy.
-        //     // If so, the task will appear, else d-none will be added
-        //     taskItems.forEach((task) => {
-        //         if (filterBy !== task.dataset.category) {
-        //             task.classList.add("d-none");
-        //         }
-        //         else{
-        //             task.classList.remove("d-none");
-        //         }
-        //     });
-        // }
-        // else {
-        //     taskItems.forEach((task) => {
-        //         task.classList.remove("d-none");
-        //     });
-        // }
 
         // Show or hide tasks based on the selected filter category
         taskItems.forEach((task) => {

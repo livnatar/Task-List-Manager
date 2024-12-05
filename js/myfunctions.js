@@ -16,16 +16,31 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // ----------------------- const ---------------------------------------
+
 const form = document.getElementById("form-row");
 const taskNameFeedback = "Task name must contain only letters, numbers, and spaces"
 const uniqueTaskNameFeedback = "Task name must be unique"
 
 // ---------------------------------------------------------------------
 
+/**
+ * This module provides functionality to initialize category and priority options in the DOM.
+ * It contains two functions:
+ *
+ * 1. `initPriorityOptions`: Renders priority options (Low, Medium, High) as radio buttons inside
+ *     the element with id "priority".
+ * 2. `initCategoryOptions`: Renders category options (Work, Personal, Shopping, Health, Other)
+ *     in two dropdowns with ids "categoryFilter" and "category".
+ *
+ * @type {{initCategoryOptions, initPriorityOptions}}
+ */
 const initDomModule = (function(){
 
     /**
+     * Renders priority options (Low, Medium, High) as radio buttons inside the element with id "priority".
+     * Clears existing options before adding new ones.
      *
+     * @returns {void}
      */
     const initPriorityOptions = () => {
         const priorityContainer = document.getElementById("priority");
@@ -46,7 +61,10 @@ const initDomModule = (function(){
     };
 
     /**
+     * Renders category options (Work, Personal, Shopping, Health, Other) in two dropdowns
+     * with ids "categoryFilter" and "category".
      *
+     * @returns {void}
      */
     const initCategoryOptions = () => {
         const filterCategoryContainer = document.getElementById("categoryFilter");
@@ -72,18 +90,26 @@ const initDomModule = (function(){
 
 })();
 
-
+/**
+ * This module provides UI-related functionalities to manage tasks, including rendering task lists,
+ * editing tasks, toggling form visibility, and handling errors. It also manages the task sorting
+ * and updates the remaining time for tasks.
+ *
+ * @type {{editTask, toggleErrors, removeTask, renderEmptyList, toggleFormVisibility, updateRemainingTimes,
+ *        toggleSortOptions, renderTaskList, calculateTimeRemaining: ((function(*): string)|*)}}
+ */
 const UiModule = (function() {
 
     let taskListContainer = document.getElementById("taskListContainer");
 
     /**
+     * Toggles visibility of the form and main page section based on the showForm parameter.
      *
-     * @param showForm = bool to control form visibility
+     * @param {boolean} showForm - If true, hides the main page and shows the form; otherwise, reverses it.
+     * @returns {void}
      */
     const toggleFormVisibility = (showForm) => {
         const mainPage= document.getElementsByClassName("main-page-section")[0];
-        //const form = document.getElementById("form-row");
 
         if(showForm) {
             mainPage.classList.add("d-none");
@@ -97,8 +123,12 @@ const UiModule = (function() {
 
 
     /**
+     * Toggles error styling on form fields based on their validity.
      *
+     * Checks the validity of each field using the validationTaskModule.getFieldsValid() method
+     * and adds/removes the "is-invalid" class accordingly.
      *
+     * @returns {void}
      */
     const toggleErrors = () => {
         const validationResults= validationTaskModule.getFieldsValid();
@@ -115,8 +145,9 @@ const UiModule = (function() {
     };
 
     /**
+     * Toggles the button text between "Sort by Due Time: Ascending" and "Sort by Due Time: Descending".
      *
-     * Toggle the button text between Ascending and Descending
+     * @returns {void}
      */
     const toggleSortOptions = () => {
 
@@ -129,8 +160,12 @@ const UiModule = (function() {
 
 
     /**
+     * Renders the task list by clearing the existing tasks and adding the updated ones.
+     * If no tasks are available, it calls renderEmptyList.
+     * For each task, generates an HTML structure, appends it to the container,
+     * and attaches event listeners for editing and deleting tasks.
      *
-     *
+     * @returns {void}
      */
     const renderTaskList = () => {
 
@@ -179,8 +214,11 @@ const UiModule = (function() {
     };
 
     /**
+     * Removes a task from the task list based on the given index.
+     * If the list becomes empty after removal, it calls renderEmptyList.
      *
-     * @param taskIndex
+     * @param taskIndex - The index of the task to be removed from the list.
+     * @returns {void}
      */
     const removeTask = (taskIndex) => {
         const taskListContainer = document.getElementById("taskListContainer");
@@ -194,11 +232,16 @@ const UiModule = (function() {
             taskListContainer.removeChild(taskItems[taskIndex]);
 
             // after removing task check if the list is empty
-            if (taskDataModule.getTasks().length === 0) renderTaskList() ;
+            if (taskDataModule.getTasks().length === 0) renderEmptyList() ;
         }
     };
 
-
+    /**
+     * Populates the task form with the data of the task to be edited.
+     *
+     * @param task - The task object containing the task details.
+     * @returns {void}
+     */
     const editTask = (task) => {
         const { taskName, category, priority, dueDateTime, description } = task;
 
@@ -211,6 +254,14 @@ const UiModule = (function() {
 
     };
 
+    /**
+     * Updates the color of the task based on its due date.
+     * If the task is overdue, it adds a "danger" class to highlight it.
+     *
+     * @param taskElement - The task element to update.
+     * @param dueDateTime - The due date and time of the task.
+     * @returns {void}
+     */
     function updateTaskColor(taskElement, dueDateTime) {
         const dueDate = new Date(dueDateTime);
         const now = new Date();
@@ -221,10 +272,12 @@ const UiModule = (function() {
         }
     }
 
-
-
     /**
-     * // Function to update the remaining time for all tasks in the DOM
+     * Updates the remaining time for all tasks in the DOM and adjusts their color based on due dates.
+     * Loops through all tasks, calculates the remaining time, and updates the display.
+     * If a task is overdue, it updates the task's color to indicate it.
+     *
+     * @returns {void}
      */
     function updateRemainingTimes() {
         const remainingTimeElements = document.querySelectorAll('.remaining-time');
@@ -243,6 +296,14 @@ const UiModule = (function() {
         });
     }
 
+    /**
+     * Calculates the remaining time until the given due date and returns it as a formatted string.
+     * If the task is overdue, returns "Overdue".
+     *
+     * @param dueDateTime - The due date and time of the task.
+     * @returns {string} - A string representing the remaining time in days, hours, and minutes,
+     *                     or "Overdue" if the due date has passed.
+     */
     function calculateTimeRemaining(dueDateTime) {
         const now = new Date();
         const dueDate = new Date(dueDateTime);
@@ -266,6 +327,12 @@ const UiModule = (function() {
         return timeRemaining.trim();
     }
 
+    /**
+     * Renders a message indicating that the task list is empty.
+     * Creates and appends an "empty list" message to the task list container.
+     *
+     * @returns {void}
+     */
     function renderEmptyList(){
         const noTasksMessage = document.createElement("li");
         noTasksMessage.classList.add("list-group-item", "text-center", "text-muted" ,"empty-message");
@@ -287,15 +354,23 @@ const UiModule = (function() {
     }
 })();
 
-
+/**
+ * Module responsible for managing the task data, including adding, deleting, retrieving tasks,
+ * and reversing the order of tasks. It ensures that the tasks are sorted according to their due date
+ * and provides methods for interacting with the task list.
+ *
+ * @type {{addTask, deleteTask, getTasks: (function(): *[]), getTask: (function(*): *), reverseTaskList}}
+ */
 const taskDataModule = (function (){
 
-    let taskList = [];      // inside the module without access to the outside
-    let isAscending = true;
+    let taskList = [];       // inside the module without access to the outside
+    let isAscending = true;  // Flag for sorting order: true = ascending, false = descending
 
     /**
-     * This function adds the task into the task list based on the sorting order (ascending or descending)
-     * @param task
+     * Adds a task to the task list, inserting it based on the sorting order of its due date (ascending or descending).
+     *
+     * @param task - The task object to be added, containing a `dueDateTime` property.
+     * @returns {void}
      */
     const addTask = (task) => {
 
@@ -337,13 +412,19 @@ const taskDataModule = (function (){
     };
 
     /**
-     * This function retrieves the task list
-     * @returns *[]
+     * Retrieves a copy of the task list to prevent direct modifications.
+     *
+     * @returns {Array} A copy of the task list.
      */
     const getTasks = () => {
         return [...taskList];    // return a copy to avoid direct change
     };
 
+    /**
+     * Reverses the order of the task list and toggles the sorting order (ascending/descending).
+     *
+     * @returns {void}
+     */
     const reverseTaskList = () =>{
         taskList.reverse();
         isAscending = !isAscending;
@@ -359,12 +440,19 @@ const taskDataModule = (function (){
     }
 })();
 
-
+/**
+ * Module for managing the task list, including task creation, submission, editing, deletion, and cancellation.
+ * Provides methods for interacting with the task form and updating the task list in the UI.
+ *
+ * @type {{cancel, submit, edit, create, delete}}
+ */
 const manageTaskList = ( function () {
 
     /**
-     * use activate form
-     * @param event
+     * Activates the task creation form.
+     *
+     * @param event - The event object triggered when the form is activated.
+     * @returns {void}
      */
     const createTask = function (event) {
         UiModule.toggleFormVisibility(true);
@@ -399,7 +487,6 @@ const manageTaskList = ( function () {
 
     /**
      *
-     * @param taskIndex
      */
     const editTask = function (taskIndex) {
 
@@ -410,8 +497,10 @@ const manageTaskList = ( function () {
     }
 
     /**
+     * Displays a confirmation modal for deleting a task, and deletes the task if confirmed.
      *
-     * @param taskIndex
+     * @param taskIndex - The index of the task to be deleted.
+     * @returns {void}
      */
     const deleteTask = function (taskIndex) {
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
@@ -433,8 +522,10 @@ const manageTaskList = ( function () {
 
 
     /**
+     * Cancels the task creation or editing process, clearing the form and hiding it.
      *
-     * @param taskIndex
+     * @param taskIndex - The index of the task being canceled (unused in this case).
+     * @returns {void}
      */
     const cancelTask = function (taskIndex) {
         formModule.clearForm();
@@ -452,11 +543,17 @@ const manageTaskList = ( function () {
     }
 })();
 
-
+/**
+ * Module for interacting with the task form. Provides methods to retrieve form data and clear the form fields.
+ *
+ * @type {{clearForm, getFormData: (function(): {dueDateTime: *, description: *, taskName: *, category: *, priority})}}
+ */
 const formModule = (function () {
 
     /**
+     * Retrieves the data from the task form fields.
      *
+     * @returns {Object} An object containing the form data (task name, category, priority, due date time, description).
      */
     const getFormData = () => {
         return {taskName: document.getElementById("taskName").value,
@@ -467,13 +564,14 @@ const formModule = (function () {
     };
 
     /**
+     * Clears all fields in the task form.
      *
+     * @returns {void}
      */
     const clearForm = () => {
         document.getElementById('taskForm').reset();
 
     };
-
 
     return {
         clearForm,
@@ -481,7 +579,15 @@ const formModule = (function () {
     }
 })();
 
-
+/**
+ * Module for validating task data in the form.
+ * Provides methods to validate individual fields and check overall task data validity.
+ *
+ * @type {{resetFieldsValid, validDescription: (function(*): *),
+ *         getFieldsValid: (function(): {dueDateTime: boolean, description: boolean, taskName: boolean, category: boolean, priority: boolean}),
+ *         isValid: (function(*): boolean), validDueDateTime: (function(*): boolean),
+ *         validTaskName: ((function(*): boolean)|*), validCategory: (function(*): *), validPriority: (function(*): boolean)}}
+ */
 const validationTaskModule = ( function () {
 
     // list for keeping up with the valid and not valid inputs in the form
@@ -494,7 +600,9 @@ const validationTaskModule = ( function () {
     };
 
     /**
+     * Resets the validation state of all form fields to valid (true).
      *
+     * @returns {void}
      */
     const resetFieldsValid = function () {
         Object.keys(fieldsValid).forEach(key => {
@@ -503,17 +611,19 @@ const validationTaskModule = ( function () {
     }
 
     /**
+     * Retrieves the current validation state of all form fields.
      *
-     *
+     * @returns {Object} An object containing the validation state of each field.
      */
-
     const getFieldsValid = function () {
         return fieldsValid;
     }
 
     /**
+     * Validates the task name for correct format and uniqueness.
      *
-     * @param element
+     * @param element - The task name to validate.
+     * @returns {boolean} `true` if the task name is valid, otherwise `false`.
      */
     const validTaskName = function ( element ) {
         const nameRegex = /^[A-Za-z0-9\s]+$/;
@@ -537,11 +647,11 @@ const validationTaskModule = ( function () {
         return true;
     }
 
-
-
     /**
+     * Validates the selected category.
      *
-     * @param element
+     * @param element - The category to validate.
+     * @returns {boolean} `true` if the category is valid, otherwise `false`.
      */
     const validCategory = function ( element ) {
         // Ensure category is selected and not "Select Category"
@@ -549,8 +659,10 @@ const validationTaskModule = ( function () {
     }
 
     /**
+     * Validates the selected priority.
      *
-     * @param element
+     * @param element - The priority to validate.
+     * @returns {boolean} `true` if the priority is selected, otherwise `false`.
      */
     const validPriority = function ( element ) {
         // Ensure priority is selected (should not be empty)
@@ -558,8 +670,10 @@ const validationTaskModule = ( function () {
     }
 
     /**
+     * Validates the selected due date and time.
      *
-     * @param element
+     * @param element - The due date and time to validate.
+     * @returns {boolean} `true` if the due date and time is selected, otherwise `false`.
      */
     const validDueDateTime = function ( element ) {
         // Ensure Due Date and Time is selected (should not be empty)
@@ -567,8 +681,10 @@ const validationTaskModule = ( function () {
     }
 
     /**
+     * Validates the task description format.
      *
-     * @param element
+     * @param element - The description to validate.
+     * @returns {boolean} `true` if the description is valid (or empty), otherwise `false`.
      */
     const validDescription = function ( element ) {
         const descriptionRegex = /^[A-Za-z0-9 .,!?'"-]*$/;
@@ -586,12 +702,16 @@ const validationTaskModule = ( function () {
         description: validDescription
     };
 
+
     /**
-     * This function receives the data that's been filled in the form.
-     * It goes over all the fields and check if the input is valid by calling the
-     * appropriate validator function
+     * Validates the task data by checking each field against its respective validator function.
      *
-     * @param taskData
+     * This function iterates through all the fields of the task data, calling the appropriate
+     * validation function for each field. It updates the `fieldsValid` object based on whether
+     * the input is valid or not.
+     *
+     * @param taskData - The task data filled in the form.
+     * @returns {boolean} `true` if all fields are valid, otherwise `false`.
      */
     const isValid = (taskData) => {
 
@@ -623,14 +743,25 @@ const validationTaskModule = ( function () {
     }
 })();
 
-
+/**
+ * Module for handling filtering and sorting tasks in the task list.
+ * Provides methods to sort tasks by due date, filter tasks by category, and retrieve the current filter state.
+ *
+ * @type {{sortTasks, getCategory: (function(): string), filterList}}
+ */
 const filterSortModule = ( function () {
 
     let currentFilter = 'All'; // Variable to store the current filter state
 
     /**
+     * Sorts the task list by due date in ascending or descending order and updates the UI.
      *
-     * @param e
+     * This function reverses the task list order, toggles the sort button text,
+     * and re-renders the updated task list. It also reapplies the current filter to the list.
+     *
+     * @param e - The event object triggered by the sort action (e.g., button click).
+     *
+     * @returns {void}
      */
     const sortTasks = (e) => {
 
@@ -641,14 +772,21 @@ const filterSortModule = ( function () {
         // Call the Ui module to render the updated task list
         UiModule.renderTaskList();
 
-        filterList( { target: { value: currentFilter } });
+        filterList( {target : { value : currentFilter } });
 
     };
 
 
     /**
-     * This function is responsible for filtering the tasks by their category
-     * @param element
+     * Filters the task list by category and updates the UI.
+     *
+     * This function filters tasks based on the selected category, hiding tasks that don't match the selected category.
+     * If "All" is selected, all tasks are shown. If no tasks are visible after filtering,
+     * an empty list message is displayed.
+     *
+     * @param element - The event object triggered by the category selection (e.g., dropdown change or filter selection).
+     *
+     * @returns {void}
      */
     const filterList = function ( element ) {
 
@@ -681,6 +819,12 @@ const filterSortModule = ( function () {
         hiddenTasks === taskDataModule.getTasks().length ? UiModule.renderEmptyList() : null;
     }
 
+
+    /**
+     * Returns the current category filter.
+     *
+     * @returns {string}
+     */
     const getCategory = function () {
         return currentFilter;
     }

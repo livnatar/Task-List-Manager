@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
 
     // Attach a single listener to the delete confirmation button
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    confirmDeleteBtn.addEventListener('click', manageTaskList.attachDeleteListener);
+    //const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    //confirmDeleteBtn.addEventListener('click', manageTaskList.attachDeleteListener);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -103,8 +103,6 @@ const initDomModule = (function(){
  */
 const UiModule = (function() {
 
-    let taskListContainer = document.getElementById("taskListContainer");
-
     /**
      * Toggles visibility of the form and main page section based on the showForm parameter.
      *
@@ -170,6 +168,7 @@ const UiModule = (function() {
      */
     const renderTaskList = function(){
 
+        const taskListContainer = document.getElementById("taskListContainer");
         // Clear the existing task list before adding the new tasks
         taskListContainer.innerHTML = '';  // This removes all existing tasks
 
@@ -213,14 +212,39 @@ const UiModule = (function() {
 
     };
 
-    /**
-     * Removes a task from the task list based on the given index.
-     * If the list becomes empty after removal, it calls renderEmptyList.
-     *
-     * @param taskIndex - The index of the task to be removed from the list.
-     * @returns {void}
-     */
-    const removeTask = function(taskIndex){
+    // /**
+    //  * Removes a task from the task list based on the given index.
+    //  * If the list becomes empty after removal, it calls renderEmptyList.
+    //  *
+    //  * @param taskIndex - The index of the task to be removed from the list.
+    //  * @returns {void}
+    //  */
+    // const removeTask = function(taskIndex){
+    //     const taskListContainer = document.getElementById("taskListContainer");
+    //
+    //     // Get all task items in the list
+    //     const taskItems = taskListContainer.querySelectorAll('.task-item');
+    //
+    //     // Check if the task at the given index exists
+    //     if (taskItems[taskIndex]) {
+    //         // Remove the specific task item
+    //         taskListContainer.removeChild(taskItems[taskIndex]);
+    //
+    //         // attach listeners according to new index
+    //
+    //
+    //
+    //
+    //
+    //         // check if after removing tasks filtered don`t need to display
+    //         filterSortModule.filterList( { target: { value: filterSortModule.getCategory() } });
+    //
+    //         // // after removing task check if the list is empty
+    //         // if (taskDataModule.getTasks().length === 0) renderEmptyList() ;
+    //     }
+    //
+    // };
+    const removeTask = function(taskIndex) {
         const taskListContainer = document.getElementById("taskListContainer");
 
         // Get all task items in the list
@@ -231,8 +255,30 @@ const UiModule = (function() {
             // Remove the specific task item
             taskListContainer.removeChild(taskItems[taskIndex]);
 
-            // after removing task check if the list is empty
-            if (taskDataModule.getTasks().length === 0) renderEmptyList() ;
+            // Update listeners with correct indices
+            const updatedTaskItems = taskListContainer.querySelectorAll('.task-item');
+            // updatedTaskItems.forEach((taskElement, newIndex) => {
+            //     const editButton = taskElement.querySelector('.edit-btn');
+            //     const deleteButton = taskElement.querySelector('.delete-btn');
+            //
+            //     // Update listener with the new index
+            //     editButton.onclick = () => manageTaskList.edit(newIndex);
+            //     deleteButton.onclick = () => manageTaskList.delete(newIndex);
+            // });
+            updatedTaskItems.forEach((taskElement, newIndex) => {
+                const editButton = taskElement.querySelector('.edit-btn');
+                const deleteButton = taskElement.querySelector('.delete-btn');
+
+                editButton.replaceWith(editButton.cloneNode(true));
+                deleteButton.replaceWith(deleteButton.cloneNode(true));
+
+                // Assign fresh listeners to the cloned buttons
+                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(newIndex));
+                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(newIndex));
+            });
+
+            // Check if the filtered tasks need to be updated
+            filterSortModule.filterList({ target: { value: filterSortModule.getCategory() } });
         }
     };
 
@@ -333,12 +379,27 @@ const UiModule = (function() {
      *
      * @returns {void}
      */
-    const renderEmptyList = function(){
-        const noTasksMessage = document.createElement("li");
-        noTasksMessage.classList.add("list-group-item", "text-center", "text-muted" ,"empty-message");
-        noTasksMessage.textContent = "Your task list is empty!";
-        taskListContainer.appendChild(noTasksMessage);
+    const renderEmptyList = function() {
+        const taskListContainer = document.getElementById("taskListContainer");
+        const existingEmptyMessage = taskListContainer.querySelector(".empty-message");
+        // If no empty-message exists, add the new one
+        if (!existingEmptyMessage) {
+            const noTasksMessage = document.createElement("li");
+            noTasksMessage.classList.add("list-group-item", "text-center", "text-muted", "empty-message");
+            noTasksMessage.textContent = "Your task list is empty!";
+            taskListContainer.appendChild(noTasksMessage);
+        }
     };
+
+    const removeEmptyList = function() {
+
+        let taskListContainer = document.getElementById("taskListContainer");
+        const existingEmptyMessage = taskListContainer.querySelector(".empty-message");
+        if (existingEmptyMessage) {
+            existingEmptyMessage.remove();
+        }
+    };
+
 
     return {
         toggleFormVisibility,
@@ -349,7 +410,8 @@ const UiModule = (function() {
         updateRemainingTimes,
         calculateTimeRemaining,
         toggleSortOptions,
-        renderEmptyList
+        renderEmptyList,
+        removeEmptyList
     }
 })();
 
@@ -502,25 +564,31 @@ const manageTaskList = ( function () {
      * @param {number} taskIndex - Index of the task to be deleted.
      */
     const deleteTask = function (taskIndex) {
-        currentTaskIndex = taskIndex; // Store the task index
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show(); // Show the modal
-    };
 
-    /**
-     * Logic executed when confirming task deletion.
-     */
-    const attachDeleteListener = function () {
-        if (currentTaskIndex !== null) {
-            taskDataModule.deleteTask(currentTaskIndex); // Remove from data
-            UiModule.removeTask(currentTaskIndex);       // Remove from DOM
-            currentTaskIndex = null;                    // Reset index
-
-            // Hide the modal
-            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-            deleteModal.hide();
+        if (confirm(" Are you sure you want to delete this task?"))
+        {
+            taskDataModule.deleteTask(taskIndex); // Remove from data
+            UiModule.removeTask(taskIndex);
         }
+        // currentTaskIndex = taskIndex; // Store the task index
+        // const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        // deleteModal.show(); // Show the modal
     };
+
+    // /**
+    //  * Logic executed when confirming task deletion.
+    //  */
+    // const attachDeleteListener = function () {
+    //     if (currentTaskIndex !== null) {
+    //         taskDataModule.deleteTask(currentTaskIndex); // Remove from data
+    //         UiModule.removeTask(currentTaskIndex);       // Remove from DOM
+    //         currentTaskIndex = null;                    // Reset index
+    //
+    //         // Hide the modal
+    //         const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    //         deleteModal.hide();
+    //     }
+    // };
 
 
     /**
@@ -540,8 +608,8 @@ const manageTaskList = ( function () {
         submit: submitTask,
         cancel: cancelTask,
         edit: editTask,
-        delete: deleteTask,
-        attachDeleteListener
+        delete: deleteTask//,
+       // attachDeleteListener
     }
 })();
 
@@ -795,27 +863,36 @@ const filterSortModule = ( function () {
 
         currentFilter = filterBy; // Store the selected filter value
 
-        if (filterBy !== 'All') {
+        // if (filterBy !== 'All') {
+        //
+        //     // A forEach loop that goes over that tasks and checks if the category equals to filterBy.
+        //     // If so, the task will appear, else d-none will be added
+        //     taskItems.forEach((task) => {
+        //         if (filterBy !== task.dataset.category) {
+        //             task.classList.add("d-none");
+        //         }
+        //         else{
+        //             task.classList.remove("d-none");
+        //         }
+        //     });
+        // }
+        // else {
+        //     taskItems.forEach((task) => {
+        //         task.classList.remove("d-none");
+        //     });
+        // }
 
-            // A forEach loop that goes over that tasks and checks if the category equals to filterBy.
-            // If so, the task will appear, else d-none will be added
-            taskItems.forEach((task) => {
-                if (filterBy !== task.dataset.category) {
-                    task.classList.add("d-none");
-                }
-                else{
-                    task.classList.remove("d-none");
-                }
-            });
-        }
-        else {
-            taskItems.forEach((task) => {
+        // Show or hide tasks based on the selected filter category
+        taskItems.forEach((task) => {
+            if (filterBy !== "All" && filterBy !== task.dataset.category) {
+                task.classList.add("d-none");
+            } else {
                 task.classList.remove("d-none");
-            });
-        }
+            }
+        });
 
         const hiddenTasks = taskListContainer.querySelectorAll('.d-none').length;
-        hiddenTasks === taskDataModule.getTasks().length ? UiModule.renderEmptyList() : null;
+        hiddenTasks === taskDataModule.getTasks().length ? UiModule.renderEmptyList() : UiModule.removeEmptyList();
     };
 
     /**

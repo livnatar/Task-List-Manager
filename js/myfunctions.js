@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function(){
 
     document.getElementById("add-task-main").addEventListener('click', manageTaskList.create);
@@ -8,6 +9,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('cancelBtn').addEventListener('click', manageTaskList.cancel);
     document.getElementById('sortByDueTime').addEventListener('click', filterSortModule.sortTasks);
     document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
+
+    // Attach a single listener to the delete confirmation button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    confirmDeleteBtn.addEventListener('click', manageTaskList.attachDeleteListener);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -437,9 +442,11 @@ const taskDataModule = (function (){
  * Module for managing the task list, including task creation, submission, editing, deletion, and cancellation.
  * Provides methods for interacting with the task form and updating the task list in the UI.
  *
- * @type {{cancel, submit, edit, create, delete}}
+ * @type {{cancel, submit, edit, create, delete, attachDeleteListener}}
  */
 const manageTaskList = ( function () {
+
+    let currentTaskIndex = null; // Keep track of the task to delete
 
     /**
      * Activates the task creation form.
@@ -490,27 +497,29 @@ const manageTaskList = ( function () {
     };
 
     /**
-     * Displays a confirmation modal for deleting a task, and deletes the task if confirmed.
+     * Shows the deletion modal and sets the current task index.
      *
-     * @param taskIndex - The index of the task to be deleted.
-     * @returns {void}
+     * @param {number} taskIndex - Index of the task to be deleted.
      */
     const deleteTask = function (taskIndex) {
+        currentTaskIndex = taskIndex; // Store the task index
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show(); // Show the modal
+    };
 
-        // Show the modal
-        deleteModal.show();
-
-        // Attach a one-time click listener to the confirm delete button
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        confirmDeleteBtn.onclick = function () {
-            // Proceed with deletion
-            taskDataModule.deleteTask(taskIndex);   //delete the task from the list
-            UiModule.removeTask(taskIndex);         //delete the task from the DOM
+    /**
+     * Logic executed when confirming task deletion.
+     */
+    const attachDeleteListener = function () {
+        if (currentTaskIndex !== null) {
+            taskDataModule.deleteTask(currentTaskIndex); // Remove from data
+            UiModule.removeTask(currentTaskIndex);       // Remove from DOM
+            currentTaskIndex = null;                    // Reset index
 
             // Hide the modal
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
             deleteModal.hide();
-        };
+        }
     };
 
 
@@ -531,7 +540,8 @@ const manageTaskList = ( function () {
         submit: submitTask,
         cancel: cancelTask,
         edit: editTask,
-        delete: deleteTask
+        delete: deleteTask,
+        attachDeleteListener
     }
 })();
 

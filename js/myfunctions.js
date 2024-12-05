@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', function(){
 
     document.getElementById("add-task-main").addEventListener('click', manageTaskList.create);
@@ -486,7 +484,7 @@ const manageTaskList = ( function () {
     const editTask = function (taskIndex) {
 
         const taskToEdit = taskDataModule.getTask(taskIndex);
-
+        taskDataModule.deleteTask(taskIndex);
         UiModule.toggleFormVisibility(true);
         UiModule.editTask(taskToEdit);
     };
@@ -551,10 +549,10 @@ const formModule = (function () {
      */
     const getFormData = function(){
         return {taskName: document.getElementById("taskName").value,
-                category: document.getElementById("category").value,
-                priority: document.querySelector('input[name="priority"]:checked')?.value || '',
-                dueDateTime: document.getElementById("dueDateTime").value,
-                description: document.getElementById("description").value};
+            category: document.getElementById("category").value,
+            priority: document.querySelector('input[name="priority"]:checked')?.value || '',
+            dueDateTime: document.getElementById("dueDateTime").value,
+            description: document.getElementById("description").value};
     };
 
     /**
@@ -802,7 +800,7 @@ const filterSortModule = ( function () {
         }
         else {
             taskItems.forEach((task) => {
-                    task.classList.remove("d-none");
+                task.classList.remove("d-none");
             });
         }
 
@@ -825,5 +823,3 @@ const filterSortModule = ( function () {
         getCategory
     }
 })();
-
-

@@ -1,18 +1,18 @@
 
 document.addEventListener('DOMContentLoaded', function(){
 
-    document.getElementById("add-task-main").addEventListener('click', manageTaskList.create);
+    document.getElementById("add-task-main").addEventListener('click', manageTaskListModule.create);
     initDomModule.initCategoryOptions();
     initDomModule.initPriorityOptions();
     UiModule.renderTaskList();   // for showing empty list message
-    document.querySelector('button[type="submit"]').addEventListener('click', manageTaskList.submit);
-    document.getElementById('cancelBtn').addEventListener('click', manageTaskList.cancel);
+    document.querySelector('button[type="submit"]').addEventListener('click', manageTaskListModule.submit);
+    document.getElementById('cancelBtn').addEventListener('click', manageTaskListModule.cancel);
     document.getElementById('sortByDueTime').addEventListener('click', filterSortModule.sortTasks);
     document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
 
     // Attach a single listener to the delete confirmation button
     //const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    //confirmDeleteBtn.addEventListener('click', manageTaskList.attachDeleteListener);
+    //confirmDeleteBtn.addEventListener('click', manageTaskListModule.attachDeleteListener);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -204,8 +204,8 @@ const UiModule = (function() {
                 taskListContainer.appendChild(taskElement);
 
                 // Add listeners (non-inline) for edit and delete buttons
-                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskList.edit(task.taskName));
-                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskList.delete(task.taskName));
+                taskElement.querySelector('.edit-btn').addEventListener('click', () => manageTaskListModule.edit(task.taskName));
+                taskElement.querySelector('.delete-btn').addEventListener('click', () => manageTaskListModule.delete(task.taskName));
 
                 updateTaskColor(taskElement, task.dueDateTime);
             });
@@ -488,7 +488,7 @@ const taskDataModule = (function (){
  *
  * @type {{cancel, submit, edit, create, delete, attachDeleteListener}}
  */
-const manageTaskList = ( function () {
+const manageTaskListModule = ( function () {
 
 
     /**

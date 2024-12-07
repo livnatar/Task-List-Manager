@@ -7,12 +7,10 @@ document.addEventListener('DOMContentLoaded', function(){
     UiModule.renderTaskList();   // for showing empty list message
     document.querySelector('button[type="submit"]').addEventListener('click', manageTaskListModule.submit);
     document.getElementById('cancelBtn').addEventListener('click', manageTaskListModule.cancel);
+    document.getElementById('cancelEdit').addEventListener('click', manageTaskListModule.cancel); //change
+    document.getElementById('saveChanges').addEventListener('click', manageTaskListModule.save); //change
     document.getElementById('sortByDueTime').addEventListener('click', filterSortModule.sortTasks);
     document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
-
-    // Attach a single listener to the delete confirmation button
-    //const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    //confirmDeleteBtn.addEventListener('click', manageTaskListModule.attachDeleteListener);
 
     // Set interval to update all tasks' remaining time every 60 seconds
     setInterval(UiModule.updateRemainingTimes, 60000); // Update every 60 seconds
@@ -99,7 +97,7 @@ const initDomModule = (function(){
  * and updates the remaining time for tasks.
  *
  * @type {{editTask, toggleErrors, removeTask, renderEmptyList, toggleFormVisibility, updateRemainingTimes,
- *        toggleSortOptions, renderTaskList, calculateTimeRemaining: ((function(*): string)|*)}}
+ *        toggleSortOptions, renderTaskList, toggleEditButtonsVisibility, calculateTimeRemaining: ((function(*): string)|*)}}
  */
 const UiModule = (function() {
 
@@ -158,6 +156,21 @@ const UiModule = (function() {
         sortButton.textContent = isAscending ? "Sort by Due Time: Descending" : "Sort by Due Time: Ascending";
     };
 
+    const toggleEditButtonsVisibility = function(show) {
+
+        const formButtons = document.querySelectorAll(".addTaskButtons");
+        const editButtons = document.querySelectorAll(".editButtons");
+
+        if (show) {
+            formButtons.forEach(formButton => {formButton.classList.add("d-none");})
+            editButtons.forEach(editButton => {editButton.classList.remove("d-none");})
+        }
+        else {
+            formButtons.forEach(formButton => {formButton.classList.remove("d-none");})
+            editButtons.forEach(editButton => {editButton.classList.add("d-none");})
+        }
+
+    };
     /**
      * Renders the task list by clearing the existing tasks and adding the updated ones.
      * If no tasks are available, it calls renderEmptyList.
@@ -182,7 +195,7 @@ const UiModule = (function() {
             // Generate the HTML for each task and append it to the container
             taskList.forEach((task) => {
                 const taskElement = document.createElement("li");
-                taskElement.classList.add("list-group-item", "task-item");
+                taskElement.classList.add("list-group-item","task-item", "border-top", "border-bottom", "rounded");
                 taskElement.dataset.category = task.category;  // Add category to the data attribute
                 taskElement.dataset.taskName = task.taskName;  // Assign task name as data attribute
 
@@ -191,7 +204,7 @@ const UiModule = (function() {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>${task.taskName}</strong> (${task.category}) - ${task.priority} Priority - ${task.description || ""}
-                            <span class="remaining-time">${calculateTimeRemaining(task.dueDateTime)}</span>
+                            <span class="remaining-time ms-5">${calculateTimeRemaining(task.dueDateTime)}</span>
                         </div>
                         <div>
                             <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
@@ -363,10 +376,11 @@ const UiModule = (function() {
 
         const taskListContainer = document.getElementById("taskListContainer");
         const existingEmptyMessage = document.querySelector(".empty-message");
+
         // If no empty-message exists, add the new one
         if (!existingEmptyMessage) {
             const noTasksMessage = document.createElement("li");
-            noTasksMessage.classList.add("list-group-item", "text-center", "text-muted", "empty-message");
+            noTasksMessage.classList.add("list-group-item","text-center", "text-muted", "empty-message", "border-top", "rounded");
             noTasksMessage.textContent = "Your task list is empty!";
             taskListContainer.appendChild(noTasksMessage);
         }
@@ -380,7 +394,6 @@ const UiModule = (function() {
         }
     };
 
-
     return {
         toggleFormVisibility,
         renderTaskList,
@@ -391,7 +404,8 @@ const UiModule = (function() {
         calculateTimeRemaining,
         toggleSortOptions,
         renderEmptyList,
-        removeEmptyList
+        removeEmptyList,
+        toggleEditButtonsVisibility
     }
 })();
 
@@ -490,6 +504,7 @@ const taskDataModule = (function (){
  */
 const manageTaskListModule = ( function () {
 
+    let currentTaskBeingEdited = null;
 
     /**
      * Activates the task creation form.
@@ -509,6 +524,10 @@ const manageTaskListModule = ( function () {
 
         // Prevent the default form submission behavior
         event.preventDefault();
+        handleAddingTask();
+    };
+
+    const handleAddingTask = function () {
 
         const formData = formModule.getFormData();
 
@@ -525,18 +544,28 @@ const manageTaskListModule = ( function () {
         else {
             UiModule.toggleErrors();
         }
-    };
-
+    }
     /**
      *
      */
     const editTask = function (taskName) {
 
+        currentTaskBeingEdited = taskName;
         const taskToEdit = taskDataModule.getTaskByName(taskName);
-        taskDataModule.deleteTask(taskName);    // to prevent a task from appearing more than once
         UiModule.toggleFormVisibility(true);
+        UiModule.toggleEditButtonsVisibility(true);
         UiModule.editTask(taskToEdit);
     };
+
+    const saveChanges = function () {
+
+        if (currentTaskBeingEdited) {
+            taskDataModule.deleteTask(currentTaskBeingEdited);
+            currentTaskBeingEdited = null;
+            UiModule.toggleEditButtonsVisibility(false);         // hiding the edit buttons
+            handleAddingTask();
+        }
+    }
 
     /**
      * Shows the deletion modal and sets the current task index.
@@ -545,15 +574,9 @@ const manageTaskListModule = ( function () {
      */
     const deleteTask = function (taskName) {
 
-        if (confirm(" Are you sure you want to delete this task?"))
-        {
-            taskDataModule.deleteTask(taskName); // Remove from data
-            UiModule.removeTask(taskName);
-        }
-
+        taskDataModule.deleteTask(taskName); // Remove from data
+        UiModule.removeTask(taskName);
     };
-
-
 
 
     /**
@@ -566,6 +589,7 @@ const manageTaskListModule = ( function () {
         validationTaskModule.resetFieldsValid();
         UiModule.toggleErrors();  //Remove error highlights
         UiModule.toggleFormVisibility(false);
+        UiModule.toggleEditButtonsVisibility(false);   //hiding the edit buttons
     };
 
     return {
@@ -573,8 +597,9 @@ const manageTaskListModule = ( function () {
         submit: submitTask,
         cancel: cancelTask,
         edit: editTask,
-        delete: deleteTask//,
-       // attachDeleteListener
+        delete: deleteTask,
+        save: saveChanges,
+        handleAddingTask
     }
 })();
 

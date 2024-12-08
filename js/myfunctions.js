@@ -6,7 +6,7 @@
         document.getElementById("add-task-main").addEventListener('click', manageTaskListModule.create);
         initDomModule.initCategoryOptions();
         initDomModule.initPriorityOptions();
-        UiModule.renderTaskList();   // for showing empty list message
+        UiModule.renderEmptyList(); // for showing empty list message
         document.querySelector('button[type="submit"]').addEventListener('click', manageTaskListModule.submit);
         document.getElementById('cancelBtn').addEventListener('click', manageTaskListModule.cancel);
         document.getElementById('cancelEdit').addEventListener('click', manageTaskListModule.cancel); //change

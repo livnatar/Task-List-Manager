@@ -9,8 +9,8 @@
         UiModule.renderEmptyList(); // for showing empty list message
         document.querySelector('button[type="submit"]').addEventListener('click', manageTaskListModule.submit);
         document.getElementById('cancelBtn').addEventListener('click', manageTaskListModule.cancel);
-        document.getElementById('cancelEdit').addEventListener('click', manageTaskListModule.cancel); //change
-        document.getElementById('saveChanges').addEventListener('click', manageTaskListModule.save); //change
+        document.getElementById('cancelEdit').addEventListener('click', manageTaskListModule.cancel);
+        document.getElementById('saveChanges').addEventListener('click', manageTaskListModule.save);
         document.getElementById('sortByDueTime').addEventListener('click', filterSortModule.sortTasks);
         document.getElementById('categoryFilter').addEventListener('change', filterSortModule.filterList);
 
